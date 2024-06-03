@@ -22,19 +22,15 @@ void Touchscreen_Init();
 void Touchscreen_Read(status_t *status);
 void Move_Cursor(status_t *status);
 
-int TEST;
-
 int main(void)
 {
     HAL_Init();
     SystemClock_Config();
     Touchscreen_Init();
     UART_Init();
-
     UART_Reset_Screen();
 
     status_t status = { 0, 0, 0 };
-
     while (1)
     {
         Touchscreen_Read(&status);
@@ -43,6 +39,9 @@ int main(void)
 }
 
 void Touchscreen_Init() {
+    // PA6 : SCL
+    // PA7 : SDA
+
     // enable GPIO clock
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
     // alternate function mode
