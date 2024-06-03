@@ -1,0 +1,13 @@
+.DS_Store
+.cproject
+.mxproject
+.project
+.settings/
+Debug/
+Drivers/
+STM32L476RGTX_FLASH.ld
+STM32L476RGTX_RAM.ld
+p3 Debug.launch
+p3.ioc
+Core/Startup/
+
