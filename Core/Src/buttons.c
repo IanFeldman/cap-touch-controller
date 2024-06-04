@@ -1,7 +1,7 @@
 #include "buttons.h"
 
-const button_t BTN_TITLE_NEW        = { 80, 20, 40, 20 };
-const button_t BTN_TITLE_OPEN       = { 80, 20, 40, 20 };
+const button_t BTN_TITLE_NEW        = { 90,  29, 5, 3 };
+const button_t BTN_TITLE_OPEN       = { 110, 29, 6, 3 };
 const button_t BTN_PROPERTIES_BACK  = { 80, 20, 40, 20 };
 const button_t BTN_PROPERTIES_START = { 80, 20, 40, 20 };
 const button_t BTN_CANVAS_DONE      = { 80, 20, 40, 20 };

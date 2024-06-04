@@ -9,11 +9,8 @@ extern "C" {
 #include "stm32l4xx_hal.h"
 #include "touchscreen.h"
 
-#define CANVAS_HEIGHT 50
-#define CANVAS_WIDTH  200
-
-#define POS_V_MAX 240
-#define POS_H_MAX 320
+#define TERMINAL_HEIGHT 50
+#define TERMINAL_WIDTH  200
 
 // FSM
 typedef enum {

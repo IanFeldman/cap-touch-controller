@@ -2,7 +2,6 @@
 #include "terminaluart.h"
 #include <stdlib.h>
 
-
 /* initialize UART for 115200 baud rate communication */
 void UART_Init() {
     // USART GPIO pins
@@ -19,6 +18,8 @@ void UART_Init() {
     PWR->CR2 |= PWR_CR2_IOSV;
     // UART clock
     RCC->APB1ENR1 |= RCC_APB1ENR1_USART2EN;
+    // receive interrupts
+    USART2->CR1 |= USART_CR1_RXNEIE;
 
     // Divider = 34.72
     USART2->BRR = 35;
@@ -27,7 +28,13 @@ void UART_Init() {
     // Enable USART
     USART2->CR1 |= USART_CR1_UE;
     // Set TE, bits
-    USART2->CR1 |= USART_CR1_TE;
+    USART2->CR1 |= USART_CR1_TE | USART_CR1_RE;
+
+    // set up interrupts
+    uint8_t irq_idx = USART2_IRQn >> 5; // divide by 32
+    NVIC->ISER[irq_idx] = 1 << (USART2_IRQn & NVIC_MSK); // get remainder
+    // global interrupts
+    __enable_irq();
 }
 
 /* print single character */
@@ -62,12 +69,36 @@ void UART_Reset_Screen() {
 
 /* update the screen based on what state it just switched to */
 void UART_Update_Screen(state_t state) {
+    // save cursor position
+    UART_Print_Esc("7");
     UART_Reset_Screen();
 
     switch(state) {
         case TITLE:
+            UART_Print_Esc("[20;85H"); UART_Print(" ____   _    ___ _   _ _______   __");
+            UART_Print_Esc("[21;85H"); UART_Print("|  _ \\ / \\  |_ _| \\ | |_   _\\ \\ / /");
+            UART_Print_Esc("[22;85H"); UART_Print("| |_) / _ \\  | ||  \\| | | |  \\ V / ");
+            UART_Print_Esc("[23;85H"); UART_Print("|  __/ ___ \\ | || |\\  | | |   | |  ");
+            UART_Print_Esc("[24;85H"); UART_Print("|_| /_/   \\_\\___|_| \\_| |_|   |_|  ");
+
+            UART_Print_Esc("[29;90H"); UART_Print("-----");
+            UART_Print_Esc("[30;90H"); UART_Print(" NEW ");
+            UART_Print_Esc("[31;90H"); UART_Print("-----");
+
+            UART_Print_Esc("[29;110H"); UART_Print("------");
+            UART_Print_Esc("[30;110H"); UART_Print(" OPEN ");
+            UART_Print_Esc("[31;110H"); UART_Print("------");
+            break;
+        case PROPERTIES:
+            UART_Print_Esc("[20;85H"); UART_Print("PROPERTIES");
+            break;
+        case BROWSER:
+            UART_Print_Esc("[20;85H"); UART_Print("BROWSER");
             break;
         default:
             break;
     }
+
+    // restore cursor position
+    UART_Print_Esc("8");
 }

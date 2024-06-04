@@ -26,28 +26,47 @@ int main(void)
 
 void Move_Cursor(status_t status) {
     if (status.update != 1) return;
-
-    uint16_t adj_y = CANVAS_HEIGHT - CANVAS_HEIGHT * status.pos_v / POS_V_MAX;
-    uint16_t adj_x = CANVAS_WIDTH * status.pos_h / POS_H_MAX;
-
-    char buff[20];
-    sprintf(buff, "[%u;%uH", adj_y, adj_x);
+    char buff[14];
+    sprintf(buff, "[%u;%uH", status.screen_y, status.screen_x);
     UART_Print_Esc(buff);
 }
 
 void On_Click(state_t *state, status_t status) {
-    uint16_t x = status.pos_h;
-    uint16_t y = status.pos_v;
+    uint16_t x = status.screen_x;
+    uint16_t y = status.screen_y;
 
     switch (*state) {
         case TITLE:
             if (On_Btn(x, y, BTN_TITLE_NEW)) {
                 *state = PROPERTIES;
                 UART_Update_Screen(*state);
+                return;
+            }
+            if (On_Btn(x, y, BTN_TITLE_OPEN)) {
+                *state = BROWSER;
+                UART_Update_Screen(*state);
+                return;
             }
             break;
         default:
             break;
+    }
+
+    // clear click
+    click = 0;
+}
+
+void USART2_IRQHandler() {
+    // check update interrupt flag
+    if (USART2->ISR & USART_ISR_RXNE) {
+        switch (USART2->RDR) {
+            case ' ':
+                click = 1;
+                break;
+            default:
+                break;
+        }
+        // flag cleared by reading register
     }
 }
 

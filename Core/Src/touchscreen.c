@@ -1,3 +1,4 @@
+#include "main.h"
 #include "touchscreen.h"
 
 void TOUCH_Init() {
@@ -72,6 +73,10 @@ void TOUCH_Read(status_t *status) {
 
     // update status
     status->update = data2;
-    status->pos_v  = data4;
-    status->pos_h  = (data5 << 8) + data6;
+    status->touch_y = data4;
+    status->touch_x = (data5 << 8) + data6;
+
+    // find screen pos
+    status->screen_y = TERMINAL_HEIGHT - TERMINAL_HEIGHT * status->touch_y / TOUCH_Y_MAX;
+    status->screen_x = TERMINAL_WIDTH * status->touch_x / TOUCH_X_MAX;
 }
