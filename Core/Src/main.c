@@ -1,146 +1,54 @@
+#include "buttons.h"
 #include "main.h"
 #include "terminaluart.h"
-#include "timer.h"
 #include <stdio.h>
 
-#define TIMING_FACTOR 0xD15
-#define DEVICE_ADDRESS 0x38
-
-#define CANVAS_HEIGHT 50
-#define CANVAS_WIDTH  200
-
-#define POS_V_MAX 240
-#define POS_H_MAX 320
-
-typedef struct {
-    uint8_t  update;
-    uint8_t  pos_v;
-    uint16_t pos_h;
-} status_t;
-
-void SystemClock_Config(void);
-void Touchscreen_Init();
-void Touchscreen_Read(status_t *status);
-void Move_Cursor(status_t *status);
-void Move_Servo(status_t *status);
+volatile uint8_t click;
 
 int main(void)
 {
     HAL_Init();
     SystemClock_Config();
-    Touchscreen_Init();
-    //UART_Init();
-    //UART_Reset_Screen();
-    TIMER_Init();
+    TOUCH_Init();
+    UART_Init();
 
+    state_t state = TITLE;
     status_t status = { 0, 0, 0 };
+    UART_Update_Screen(state);
+
     while (1)
     {
-        Touchscreen_Read(&status);
-        //Move_Cursor(&status);
-        Move_Servo(&status);
+        if (click) On_Click(&state, status);
+        TOUCH_Read(&status);
+        Move_Cursor(status);
     }
 }
 
-void Touchscreen_Init() {
-    // PB6 : SCL
-    // PB7 : SDA
+void Move_Cursor(status_t status) {
+    if (status.update != 1) return;
 
-    // enable GPIO clock
-    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
-    // alternate function mode
-    GPIOB->MODER &= ~(GPIO_MODER_MODE6_Msk | GPIO_MODER_MODE7_Msk);
-    GPIOB->MODER |= (GPIO_MODER_MODE6_1 | GPIO_MODER_MODE7_1);
-    // open-drain
-    GPIOB->OTYPER |= (GPIO_OTYPER_OT6 | GPIO_OTYPER_OT7);
-    // high speed
-    GPIOB->OSPEEDR |= (GPIO_OSPEEDR_OSPEED6_Msk | GPIO_OSPEEDR_OSPEED7_Msk);
-    // pull up resistors
-    GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPD6_Msk | GPIO_PUPDR_PUPD7_Msk);
-    GPIOB->PUPDR |= (GPIO_PUPDR_PUPD6_0 | GPIO_PUPDR_PUPD7_0);
-    // set alternate function
-    GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL6_Msk | GPIO_AFRL_AFSEL7_Msk);
-    GPIOB->AFR[0] |= (4 << GPIO_AFRL_AFSEL6_Pos) | (4 << GPIO_AFRL_AFSEL7_Pos);
-    // enable I2C clock
-    RCC->APB1ENR1 |= RCC_APB1ENR1_I2C1EN;
-    // disable before start
-    I2C1->CR1 &= ~I2C_CR1_PE;
-    // configure I2C1 timing
-    I2C1->TIMINGR = TIMING_FACTOR;
-    // set up filters
-    I2C1->CR1 &= ~I2C_CR1_ANFOFF;
-    I2C1->CR1 &= ~I2C_CR1_DNF_Msk;
-    // no stretch
-    I2C1->CR1 &= ~I2C_CR1_NOSTRETCH;
-    // re-enable
-    I2C1->CR1 |= I2C_CR1_PE;
-}
+    uint16_t adj_y = CANVAS_HEIGHT - CANVAS_HEIGHT * status.pos_v / POS_V_MAX;
+    uint16_t adj_x = CANVAS_WIDTH * status.pos_h / POS_H_MAX;
 
-void Touchscreen_Read(status_t *status) {
-    // autoend
-    I2C1->CR1 |= (I2C_CR2_AUTOEND);
-    // 7 bit address
-    I2C1->CR2 &= ~(I2C_CR2_ADD10);
-    // set peripheral address
-    I2C1->CR2 &= ~(I2C_CR2_SADD);
-    I2C1->CR2 |= (DEVICE_ADDRESS << 1);
-    // read
-    I2C1->CR2 |= (I2C_CR2_RD_WRN);
-    // read 9 bytes (register address)
-    I2C1->CR2 &= ~(I2C_CR2_NBYTES);
-    I2C1->CR2 |= (9 << I2C_CR2_NBYTES_Pos);
-    // start
-    I2C1->CR2 |= (1 << I2C_CR2_START_Pos);
-
-    // wait for flag
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data0 = I2C1->RXDR;
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data1 = I2C1->RXDR;
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data2 = I2C1->RXDR;
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data3 = I2C1->RXDR;
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data4 = I2C1->RXDR;
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data5 = I2C1->RXDR;
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data6 = I2C1->RXDR;
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data7 = I2C1->RXDR;
-    while(!(I2C1->ISR & I2C_ISR_RXNE));
-    uint8_t data8 = I2C1->RXDR;
-
-    // update status
-    status->update = data2;
-    status->pos_v  = data4;
-    status->pos_h  = (data5 << 8) + data6;
-}
-
-void Move_Cursor(status_t *status) {
-    if (status->update != 1) return;
-
-    uint16_t adj_y = CANVAS_HEIGHT - CANVAS_HEIGHT * status->pos_v / POS_V_MAX;
-    uint16_t adj_x = CANVAS_WIDTH * status->pos_h / POS_H_MAX;
-
-    uint8_t buff[20];
+    char buff[20];
     sprintf(buff, "[%u;%uH", adj_y, adj_x);
     UART_Print_Esc(buff);
 }
 
-void Move_Servo(status_t *status) {
-    if (status->update != 1) {
-        TIM2->CCR1 = PWM_DUTY;
-        return;
+void On_Click(state_t *state, status_t status) {
+    uint16_t x = status.pos_h;
+    uint16_t y = status.pos_v;
+
+    switch (*state) {
+        case TITLE:
+            if (On_Btn(x, y, BTN_TITLE_NEW)) {
+                *state = PROPERTIES;
+                UART_Update_Screen(*state);
+            }
+            break;
+        default:
+            break;
     }
-
-    uint16_t half = POS_H_MAX / 2;
-    int16_t  delta = 0;
-    delta = status->pos_h - half;
-
-    int32_t duty_cycle_offset = SERVO_MAX * delta / half;
-    TIM2->CCR1 = PWM_DUTY + duty_cycle_offset;
 }
 
 void SystemClock_Config(void)

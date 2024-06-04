@@ -59,3 +59,15 @@ void UART_Reset_Screen() {
     UART_Print_Esc("[0m"); // disable attributes
     UART_Print_Esc("[H");  // move cursor back to top
 }
+
+/* update the screen based on what state it just switched to */
+void UART_Update_Screen(state_t state) {
+    UART_Reset_Screen();
+
+    switch(state) {
+        case TITLE:
+            break;
+        default:
+            break;
+    }
+}
