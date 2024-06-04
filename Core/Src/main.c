@@ -1,5 +1,6 @@
 #include "main.h"
 #include "terminaluart.h"
+#include "timer.h"
 #include <stdio.h>
 
 #define TIMING_FACTOR 0xD15
@@ -21,26 +22,29 @@ void SystemClock_Config(void);
 void Touchscreen_Init();
 void Touchscreen_Read(status_t *status);
 void Move_Cursor(status_t *status);
+void Move_Servo(status_t *status);
 
 int main(void)
 {
     HAL_Init();
     SystemClock_Config();
     Touchscreen_Init();
-    UART_Init();
-    UART_Reset_Screen();
+    //UART_Init();
+    //UART_Reset_Screen();
+    TIMER_Init();
 
     status_t status = { 0, 0, 0 };
     while (1)
     {
         Touchscreen_Read(&status);
-        Move_Cursor(&status);
+        //Move_Cursor(&status);
+        Move_Servo(&status);
     }
 }
 
 void Touchscreen_Init() {
-    // PA6 : SCL
-    // PA7 : SDA
+    // PB6 : SCL
+    // PB7 : SDA
 
     // enable GPIO clock
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOBEN;
@@ -123,6 +127,20 @@ void Move_Cursor(status_t *status) {
     uint8_t buff[20];
     sprintf(buff, "[%u;%uH", adj_y, adj_x);
     UART_Print_Esc(buff);
+}
+
+void Move_Servo(status_t *status) {
+    if (status->update != 1) {
+        TIM2->CCR1 = PWM_DUTY;
+        return;
+    }
+
+    uint16_t half = POS_H_MAX / 2;
+    int16_t  delta = 0;
+    delta = status->pos_h - half;
+
+    int32_t duty_cycle_offset = SERVO_MAX * delta / half;
+    TIM2->CCR1 = PWM_DUTY + duty_cycle_offset;
 }
 
 void SystemClock_Config(void)

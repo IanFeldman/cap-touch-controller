@@ -12,7 +12,7 @@ void UART_Init() {
     GPIOA->MODER &= ~(GPIO_MODER_MODE2 | GPIO_MODER_MODE3);
     GPIOA->MODER |= (GPIO_MODER_MODE2_1 | GPIO_MODER_MODE3_1);
     // alt func: 7
-    GPIOA->AFR[0] &= 0;
+    GPIOA->AFR[0] &= ~(GPIO_AFRL_AFSEL2 | GPIO_AFRL_AFSEL3);
     GPIOA->AFR[0] |= ((7 << GPIO_AFRL_AFSEL2_Pos) | (7 << GPIO_AFRL_AFSEL3_Pos));
 
     // UART power
