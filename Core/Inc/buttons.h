@@ -9,8 +9,12 @@ typedef struct {
 
 extern const button_t BTN_TITLE_NEW;
 extern const button_t BTN_TITLE_OPEN;
-extern const button_t BTN_PROPERTIES_BACK;
-extern const button_t BTN_PROPERTIES_START;
+
+extern const button_t BTN_SIZING_SMALL;
+extern const button_t BTN_SIZING_MEDIUM;
+extern const button_t BTN_SIZING_LARGE;
+extern const button_t BTN_SIZING_BACK;
+
 extern const button_t BTN_CANVAS_DONE;
 extern const button_t BTN_SAVE_DONE;
 extern const button_t BTN_BROWSER_BACK;

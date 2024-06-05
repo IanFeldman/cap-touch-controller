@@ -12,10 +12,17 @@ extern "C" {
 #define TERMINAL_HEIGHT 50
 #define TERMINAL_WIDTH  200
 
+// y dimension
+#define SIZE_SMALL  8
+#define SIZE_MEDIUM 16
+#define SIZE_LARGE  32
+
+#define BUFF_LEN 14
+
 // FSM
 typedef enum {
     TITLE,
-    PROPERTIES,
+    SIZING,
     CANVAS,
     SAVE,
     BROWSER,

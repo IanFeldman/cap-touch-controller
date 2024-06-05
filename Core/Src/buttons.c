@@ -2,8 +2,12 @@
 
 const button_t BTN_TITLE_NEW        = { 90,  29, 5, 3 };
 const button_t BTN_TITLE_OPEN       = { 110, 29, 6, 3 };
-const button_t BTN_PROPERTIES_BACK  = { 80, 20, 40, 20 };
-const button_t BTN_PROPERTIES_START = { 80, 20, 40, 20 };
+
+const button_t BTN_SIZING_SMALL     = {  70, 20, 11, 5 };
+const button_t BTN_SIZING_MEDIUM    = {  93, 19, 14, 7 };
+const button_t BTN_SIZING_LARGE     = { 119, 18, 17, 9 };
+const button_t BTN_SIZING_BACK      = {  97, 34,  6, 3 };
+
 const button_t BTN_CANVAS_DONE      = { 80, 20, 40, 20 };
 const button_t BTN_SAVE_DONE        = { 80, 20, 40, 20 };
 const button_t BTN_BROWSER_BACK     = { 80, 20, 40, 20 };

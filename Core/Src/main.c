@@ -14,7 +14,7 @@ int main(void)
 
     state_t state = TITLE;
     status_t status = { 0, 0, 0 };
-    UART_Update_Screen(state);
+    UART_Update_Screen(state, 0);
 
     while (1)
     {
@@ -26,7 +26,7 @@ int main(void)
 
 void Move_Cursor(status_t status) {
     if (status.update != 1) return;
-    char buff[14];
+    char buff[BUFF_LEN];
     sprintf(buff, "[%u;%uH", status.screen_y, status.screen_x);
     UART_Print_Esc(buff);
 }
@@ -34,24 +34,53 @@ void Move_Cursor(status_t status) {
 void On_Click(state_t *state, status_t status) {
     uint16_t x = status.screen_x;
     uint16_t y = status.screen_y;
+    uint8_t btn_press = 0;
+    uint8_t size = 0;
 
     switch (*state) {
         case TITLE:
             if (On_Btn(x, y, BTN_TITLE_NEW)) {
-                *state = PROPERTIES;
-                UART_Update_Screen(*state);
-                return;
+                *state = SIZING;
+                btn_press = 1;
+                break;
             }
             if (On_Btn(x, y, BTN_TITLE_OPEN)) {
                 *state = BROWSER;
-                UART_Update_Screen(*state);
-                return;
+                btn_press = 1;
+                break;
+            }
+            break;
+        case SIZING:
+            if (On_Btn(x, y, BTN_SIZING_SMALL)) {
+                size = SIZE_SMALL;
+                *state = CANVAS;
+                btn_press = 1;
+                break;
+            }
+            if (On_Btn(x, y, BTN_SIZING_MEDIUM)) {
+                size = SIZE_MEDIUM;
+                *state = CANVAS;
+                btn_press = 1;
+                break;
+            }
+            if (On_Btn(x, y, BTN_SIZING_LARGE)) {
+                size = SIZE_LARGE;
+                *state = CANVAS;
+                btn_press = 1;
+                break;
+            }
+            if (On_Btn(x, y, BTN_SIZING_BACK)) {
+                *state = TITLE;
+                btn_press = 1;
+                break;
             }
             break;
         default:
             break;
     }
 
+    // update screen if there was a press
+    if (btn_press) UART_Update_Screen(*state, size);
     // clear click
     click = 0;
 }
