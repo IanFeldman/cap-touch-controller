@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #define ESC_CHAR 0x1b
-#define NVIC_MSK 0x1f
 #define BLANK_CHAR ' '
 
 void UART_Init();

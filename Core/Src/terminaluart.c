@@ -6,6 +6,8 @@
 /* initialize UART for 115200 baud rate communication */
 void UART_Init() {
     // USART GPIO pins
+    // PA2, PA3
+
     // clock
     RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN;
     // alternate func
@@ -33,9 +35,7 @@ void UART_Init() {
 
     // set up interrupts
     uint8_t irq_idx = USART2_IRQn >> 5; // divide by 32
-    NVIC->ISER[irq_idx] = 1 << (USART2_IRQn & NVIC_MSK); // get remainder
-    // global interrupts
-    __enable_irq();
+    NVIC->ISER[irq_idx] = 1 << (USART2_IRQn & 0x1F); // get remainder
 }
 
 /* print single character */
@@ -76,11 +76,11 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
 
     switch(state) {
         case TITLE:
-            UART_Print_Esc("[20;85H"); UART_Print(" ____   _    ___ _   _ _______   __");
-            UART_Print_Esc("[21;85H"); UART_Print("|  _ \\ / \\  |_ _| \\ | |_   _\\ \\ / /");
-            UART_Print_Esc("[22;85H"); UART_Print("| |_) / _ \\  | ||  \\| | | |  \\ V / ");
-            UART_Print_Esc("[23;85H"); UART_Print("|  __/ ___ \\ | || |\\  | | |   | |  ");
-            UART_Print_Esc("[24;85H"); UART_Print("|_| /_/   \\_\\___|_| \\_| |_|   |_|  ");
+            UART_Print_Esc("[20;75H"); UART_Print(" _____                   ____  _        _       _ "          );
+            UART_Print_Esc("[21;75H"); UART_Print("|_   _|__ _ __ _ __ ___ / ___|| | _____| |_ ___| |__"        );
+            UART_Print_Esc("[22;75H"); UART_Print("  | |/ _ \\ '__| '_ ` _ \\\\___ \\| |/ / _ \\ __/ __| '_ \\" );
+            UART_Print_Esc("[23;75H"); UART_Print("  | |  __/ |  | | | | | |___) |   <  __/ || (__| | | |"      );
+            UART_Print_Esc("[24;75H"); UART_Print("  |_|\\___|_|  |_| |_| |_|____/|_|\\_\\___|\\__\\___|_| |_|" );
 
             UART_Print_Esc("[29;90H"); UART_Print("-----");
             UART_Print_Esc("[30;90H"); UART_Print(" NEW ");
@@ -172,7 +172,7 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
             UART_Print_Esc("[46;97H"); UART_Print("------");
             break;
         case SAVE:
-            UART_Print_Esc("[20;85H"); UART_Print("SAVE");
+            UART_Print_Esc("[10;98H"); UART_Print("SAVE");
             break;
         case BROWSER:
             UART_Print_Esc("[20;85H"); UART_Print("BROWSER");

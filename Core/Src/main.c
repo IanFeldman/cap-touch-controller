@@ -3,25 +3,28 @@
 #include "terminaluart.h"
 #include <stdio.h>
 
+volatile uint8_t click_prelim;
 volatile uint8_t click;
 
 int main(void)
 {
     HAL_Init();
     SystemClock_Config();
-    TOUCH_Init();
+    Touchscreen_Init();
     UART_Init();
+    Button_Init();
+    __enable_irq();
 
-    state_t state = TITLE;
+    state_t  state  = TITLE;
     status_t status = { 0, 0, 0 };
+    uint8_t  move_cursor_allowed = 1;
     UART_Update_Screen(state, 0);
-    //UART_Update_Screen(CANVAS, SIZE_LARGE);
 
     while (1)
     {
         if (click) On_Click(&state, status);
-        TOUCH_Read(&status);
-        Move_Cursor(status);
+        Touchscreen_Read(&status);
+        if (move_cursor_allowed) Move_Cursor(status);
     }
 }
 
@@ -96,6 +99,7 @@ void On_Click(state_t *state, status_t status) {
             if (On_Btn(x, y, canvas)) {
                 // draw to canvas
                 UART_Print_Char(BLANK_CHAR);
+                UART_Print_Esc("[1D");
                 break;
             }
             if (On_Btn(x, y, BTN_CANVAS_RED)) {
@@ -129,21 +133,57 @@ void On_Click(state_t *state, status_t status) {
 
     // update screen if there was a press
     if (state_update) UART_Update_Screen(*state, size);
-    // clear click
-    click = 0;
 }
 
 void USART2_IRQHandler() {
     // check update interrupt flag
     if (USART2->ISR & USART_ISR_RXNE) {
         switch (USART2->RDR) {
-            case ' ':
-                click = 1;
-                break;
             default:
                 break;
         }
         // flag cleared by reading register
+    }
+}
+
+// rising
+void EXTI0_IRQHandler() {
+    // check flag
+    if (EXTI->PR1 & EXTI_PR1_PIF0) {
+        if (!click) {
+            click_prelim = 1;
+            // start debounce timer
+            TIM2->CR1 = TIM_CR1_CEN;
+        }
+        // reset flag by setting
+        EXTI->PR1 |= EXTI_PR1_PIF0;
+    }
+}
+
+// falling
+void EXTI1_IRQHandler() {
+    // check flag
+    if (EXTI->PR1 & EXTI_PR1_PIF1) {
+        if (click) {
+            click_prelim = 0;
+            // start debounce timer
+            TIM2->CR1 = TIM_CR1_CEN;
+        }
+        // reset flag by setting
+        EXTI->PR1 |= EXTI_PR1_PIF0;
+    }
+}
+
+void TIM2_IRQHandler() {
+    // check update interrupt flag
+    if (TIM2->SR & TIM_SR_UIF) {
+        uint8_t curr_click = GPIOA->IDR & GPIO_IDR_ID0;
+        // if it is still where it was
+        if (curr_click == click_prelim) {
+            click = click_prelim;
+        }
+        // clear flags
+        TIM2->SR &= ~TIM_SR_UIF;
     }
 }
 

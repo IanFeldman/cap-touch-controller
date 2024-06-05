@@ -17,7 +17,7 @@ typedef struct {
     uint16_t screen_x;
 } status_t;
 
-void TOUCH_Init();
-void TOUCH_Read(status_t *status);
+void Touchscreen_Init();
+void Touchscreen_Read(status_t *status);
 
 #endif

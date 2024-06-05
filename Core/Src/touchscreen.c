@@ -1,7 +1,7 @@
 #include "main.h"
 #include "touchscreen.h"
 
-void TOUCH_Init() {
+void Touchscreen_Init() {
     // PB6 : SCL
     // PB7 : SDA
 
@@ -35,7 +35,7 @@ void TOUCH_Init() {
     I2C1->CR1 |= I2C_CR1_PE;
 }
 
-void TOUCH_Read(status_t *status) {
+void Touchscreen_Read(status_t *status) {
     // autoend
     I2C1->CR1 |= (I2C_CR2_AUTOEND);
     // 7 bit address

@@ -3,6 +3,9 @@
 
 #include "stm32l4xx_hal.h"
 
+// must press for 1 ms
+#define PRESS_MIN_CYCLES 4000
+
 typedef struct {
     uint16_t x, y, w, h;
 } button_t;
@@ -31,4 +34,7 @@ extern const button_t BTN_OPTIONS_PREVIEW;
 extern const button_t BTN_PREVIEW_DONE;
 
 uint8_t On_Btn(uint16_t x, uint16_t y, button_t btn);
+
+void Button_Init();
+
 #endif
