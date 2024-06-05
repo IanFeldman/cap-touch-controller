@@ -1,4 +1,5 @@
 #include "buttons.h"
+#include "stm32l4xx_hal.h"
 
 const button_t BTN_TITLE_NEW        = { 60, 25, 5, 3 };
 const button_t BTN_TITLE_OPEN       = { 78, 25, 6, 3 };

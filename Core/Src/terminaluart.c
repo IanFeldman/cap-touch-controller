@@ -69,7 +69,7 @@ void UART_Reset_Screen() {
 }
 
 /* update the screen based on what state it just switched to */
-void UART_Update_Screen(state_t state, uint8_t canvas_size) {
+void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_size_y) {
     // save cursor position
     UART_Print_Esc("7");
     UART_Reset_Screen();
@@ -127,8 +127,8 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
             // background to white
             UART_Print_Esc("[47m");
             // move cursor
-            uint8_t height = canvas_size;
-            uint8_t width  = canvas_size << 2;
+            uint8_t height = canvas_size_y;
+            uint8_t width  = canvas_size_x;
             uint16_t y_min = (TERMINAL_HEIGHT >> 1) - (height >> 1);
             uint16_t x_min = (TERMINAL_WIDTH  >> 1) - (width  >> 1) + 1;
             char buff[BUFF_LEN];
@@ -172,8 +172,13 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
             UART_Print_Esc("[39;67H"); UART_Print("------");
             break;
         case SAVE:
-            UART_Print_Esc("[10;98H"); UART_Print("SAVE");
-            break;
+            UART_Print_Esc("[10;64H"); UART_Print("== SAVE ==");
+            UART_Print_Esc("[15;40H"); UART_Print("Save as:                                  (32 character max)");
+            UART_Print_Esc("[20;60H"); UART_Print("Hit [Enter] when done");
+            // move cursor back to type spot
+            UART_Print_Esc("[15;49H");
+            // return so dont restore cursor position
+            return;
         case BROWSER:
             UART_Print_Esc("[20;85H"); UART_Print("BROWSER");
             break;

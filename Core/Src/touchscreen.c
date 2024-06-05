@@ -37,7 +37,7 @@ void Touchscreen_Init() {
 
 void Touchscreen_Read(status_t *status) {
     // autoend
-    I2C1->CR1 |= (I2C_CR2_AUTOEND);
+    I2C1->CR2 |= (I2C_CR2_AUTOEND);
     // 7 bit address
     I2C1->CR2 &= ~(I2C_CR2_ADD10);
     // set peripheral address
