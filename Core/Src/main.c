@@ -31,7 +31,7 @@ int main(void)
 void Move_Cursor(status_t status) {
     if (status.update != 1) return;
     char buff[BUFF_LEN];
-    sprintf(buff, "[%u;%uH", status.screen_y, status.screen_x);
+    sprintf(buff, "[%u;%uH", status.term_y, status.term_x);
     UART_Print_Esc(buff);
 }
 
@@ -41,8 +41,8 @@ void On_Click(state_t *state, status_t status) {
     uint8_t state_update = 0;
 
     // get location
-    uint16_t x = status.screen_x;
-    uint16_t y = status.screen_y;
+    uint16_t y = status.term_y;
+    uint16_t x = status.term_x;
 
     // update canvas size
     button_t canvas = {

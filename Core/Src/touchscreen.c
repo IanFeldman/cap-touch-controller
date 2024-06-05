@@ -71,6 +71,13 @@ void Touchscreen_Read(status_t *status) {
     while(!(I2C1->ISR & I2C_ISR_RXNE));
     uint8_t data8 = I2C1->RXDR;
 
+    // Suppress warnings about unused variables
+    (void)data0;
+    (void)data1;
+    (void)data3;
+    (void)data7;
+    (void)data8;
+
     // update status
     status->update = data2;
     status->touch_y = data4;
@@ -82,6 +89,6 @@ void Touchscreen_Read(status_t *status) {
     status->screen_x = TERMINAL_WIDTH * status->touch_x / TOUCH_X_MAX;
     */
     // upside down
-    status->screen_y = TERMINAL_HEIGHT * status->touch_y / TOUCH_Y_MAX;
-    status->screen_x = TERMINAL_WIDTH - TERMINAL_WIDTH * status->touch_x / TOUCH_X_MAX;
+    status->term_y = TERMINAL_HEIGHT * status->touch_y / TOUCH_Y_MAX;
+    status->term_x = TERMINAL_WIDTH - TERMINAL_WIDTH * status->touch_x / TOUCH_X_MAX;
 }

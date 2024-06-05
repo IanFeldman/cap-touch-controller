@@ -11,10 +11,10 @@
 
 typedef struct {
     uint8_t  update;
-    uint8_t touch_y;
-    uint16_t  touch_x;
-    uint16_t screen_y;
-    uint16_t screen_x;
+    uint8_t  touch_y;
+    uint16_t touch_x;
+    uint16_t term_y;
+    uint16_t term_x;
 } status_t;
 
 void Touchscreen_Init();
