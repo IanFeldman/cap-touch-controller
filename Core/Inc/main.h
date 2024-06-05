@@ -9,8 +9,12 @@ extern "C" {
 #include "stm32l4xx_hal.h"
 #include "touchscreen.h"
 
+/*
 #define TERMINAL_HEIGHT 50
 #define TERMINAL_WIDTH  200
+*/
+#define TERMINAL_HEIGHT 40
+#define TERMINAL_WIDTH  138
 
 // y dimension
 #define SIZE_SMALL  8

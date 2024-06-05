@@ -46,7 +46,7 @@ void On_Click(state_t *state, status_t status) {
 
     // update canvas size
     button_t canvas = {
-        (TERMINAL_WIDTH  >> 1) - (size << 1),
+        (TERMINAL_WIDTH  >> 1) - (size << 1) + 1,
         (TERMINAL_HEIGHT >> 1) - (size >> 1),
         size << 2,
         size

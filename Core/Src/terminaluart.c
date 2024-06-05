@@ -76,53 +76,53 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
 
     switch(state) {
         case TITLE:
-            UART_Print_Esc("[20;75H"); UART_Print(" _____                   ____  _        _       _ "          );
-            UART_Print_Esc("[21;75H"); UART_Print("|_   _|__ _ __ _ __ ___ / ___|| | _____| |_ ___| |__"        );
-            UART_Print_Esc("[22;75H"); UART_Print("  | |/ _ \\ '__| '_ ` _ \\\\___ \\| |/ / _ \\ __/ __| '_ \\" );
-            UART_Print_Esc("[23;75H"); UART_Print("  | |  __/ |  | | | | | |___) |   <  __/ || (__| | | |"      );
-            UART_Print_Esc("[24;75H"); UART_Print("  |_|\\___|_|  |_| |_| |_|____/|_|\\_\\___|\\__\\___|_| |_|" );
+            UART_Print_Esc("[15;45H"); UART_Print(" _____                   ____  _        _       _ "          );
+            UART_Print_Esc("[16;45H"); UART_Print("|_   _|__ _ __ _ __ ___ / ___|| | _____| |_ ___| |__"        );
+            UART_Print_Esc("[17;45H"); UART_Print("  | |/ _ \\ '__| '_ ` _ \\\\___ \\| |/ / _ \\ __/ __| '_ \\" );
+            UART_Print_Esc("[18;45H"); UART_Print("  | |  __/ |  | | | | | |___) |   <  __/ || (__| | | |"      );
+            UART_Print_Esc("[19;45H"); UART_Print("  |_|\\___|_|  |_| |_| |_|____/|_|\\_\\___|\\__\\___|_| |_|" );
 
-            UART_Print_Esc("[29;90H"); UART_Print("-----");
-            UART_Print_Esc("[30;90H"); UART_Print(" NEW ");
-            UART_Print_Esc("[31;90H"); UART_Print("-----");
+            UART_Print_Esc("[25;60H"); UART_Print("-----");
+            UART_Print_Esc("[26;60H"); UART_Print(" NEW ");
+            UART_Print_Esc("[27;60H"); UART_Print("-----");
 
-            UART_Print_Esc("[29;110H"); UART_Print("------");
-            UART_Print_Esc("[30;110H"); UART_Print(" OPEN ");
-            UART_Print_Esc("[31;110H"); UART_Print("------");
+            UART_Print_Esc("[25;78H"); UART_Print("------");
+            UART_Print_Esc("[26;78H"); UART_Print(" OPEN ");
+            UART_Print_Esc("[27;78H"); UART_Print("------");
             break;
         case SIZING:
-            UART_Print_Esc("[10;97H"); UART_Print("SIZING");
+            UART_Print_Esc("[7;64H"); UART_Print("== SIZING ==");
 
-            UART_Print_Esc("[20;70H"); UART_Print(" _________ ");
-            UART_Print_Esc("[21;70H"); UART_Print("|         |");
-            UART_Print_Esc("[22;70H"); UART_Print("|  SMALL  |");
-            UART_Print_Esc("[23;70H"); UART_Print("|  32x8   |");
-            UART_Print_Esc("[24;70H"); UART_Print("|_________|");
+            UART_Print_Esc("[17;40H"); UART_Print(" _________ ");
+            UART_Print_Esc("[18;40H"); UART_Print("|         |");
+            UART_Print_Esc("[19;40H"); UART_Print("|  SMALL  |");
+            UART_Print_Esc("[20;40H"); UART_Print("|  32x8   |");
+            UART_Print_Esc("[21;40H"); UART_Print("|_________|");
 
-            UART_Print_Esc("[19;93H"); UART_Print(" ____________ ");
-            UART_Print_Esc("[20;93H"); UART_Print("|            |");
-            UART_Print_Esc("[21;93H"); UART_Print("|            |");
-            UART_Print_Esc("[22;93H"); UART_Print("|   MEDIUM   |");
-            UART_Print_Esc("[23;93H"); UART_Print("|   64x16    |");
-            UART_Print_Esc("[24;93H"); UART_Print("|            |");
-            UART_Print_Esc("[25;93H"); UART_Print("|____________|");
+            UART_Print_Esc("[16;63H"); UART_Print(" ____________ ");
+            UART_Print_Esc("[17;63H"); UART_Print("|            |");
+            UART_Print_Esc("[18;63H"); UART_Print("|            |");
+            UART_Print_Esc("[19;63H"); UART_Print("|   MEDIUM   |");
+            UART_Print_Esc("[20;63H"); UART_Print("|   64x16    |");
+            UART_Print_Esc("[21;63H"); UART_Print("|            |");
+            UART_Print_Esc("[22;63H"); UART_Print("|____________|");
 
-            UART_Print_Esc("[18;119H"); UART_Print(" _______________");
-            UART_Print_Esc("[19;119H"); UART_Print("|               |");
-            UART_Print_Esc("[20;119H"); UART_Print("|               |");
-            UART_Print_Esc("[21;119H"); UART_Print("|               |");
-            UART_Print_Esc("[22;119H"); UART_Print("|     LARGE     |");
-            UART_Print_Esc("[23;119H"); UART_Print("|     128x32    |");
-            UART_Print_Esc("[24;119H"); UART_Print("|               |");
-            UART_Print_Esc("[25;119H"); UART_Print("|               |");
-            UART_Print_Esc("[26;119H"); UART_Print("|_______________|");
+            UART_Print_Esc("[15;89H"); UART_Print(" _______________");
+            UART_Print_Esc("[16;89H"); UART_Print("|               |");
+            UART_Print_Esc("[17;89H"); UART_Print("|               |");
+            UART_Print_Esc("[18;89H"); UART_Print("|               |");
+            UART_Print_Esc("[19;89H"); UART_Print("|     LARGE     |");
+            UART_Print_Esc("[20;89H"); UART_Print("|     128x32    |");
+            UART_Print_Esc("[21;89H"); UART_Print("|               |");
+            UART_Print_Esc("[22;89H"); UART_Print("|               |");
+            UART_Print_Esc("[23;89H"); UART_Print("|_______________|");
 
-            UART_Print_Esc("[34;97H"); UART_Print("------");
-            UART_Print_Esc("[35;97H"); UART_Print(" BACK ");
-            UART_Print_Esc("[36;97H"); UART_Print("------");
+            UART_Print_Esc("[30;67H"); UART_Print("------");
+            UART_Print_Esc("[31;67H"); UART_Print(" BACK ");
+            UART_Print_Esc("[32;67H"); UART_Print("------");
             break;
         case CANVAS:
-            UART_Print_Esc("[5;97H"); UART_Print("CANVAS");
+            UART_Print_Esc("[2;64H"); UART_Print("== CANVAS ==");
             // draw canvas
             // background to white
             UART_Print_Esc("[47m");
@@ -130,7 +130,7 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
             uint8_t height = canvas_size;
             uint8_t width  = canvas_size << 2;
             uint16_t y_min = (TERMINAL_HEIGHT >> 1) - (height >> 1);
-            uint16_t x_min = (TERMINAL_WIDTH  >> 1) - (width  >> 1);
+            uint16_t x_min = (TERMINAL_WIDTH  >> 1) - (width  >> 1) + 1;
             char buff[BUFF_LEN];
             sprintf(buff, "[%u;%uH", y_min, x_min);
             UART_Print_Esc(buff);
@@ -146,30 +146,30 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
             // color buttons
             uint8_t color_btn_width  = 8;
             uint8_t color_btn_height = 3;
-            uint16_t color_btn_x = 170;
-            uint16_t color_btn_y = 14;
+            uint16_t color_btn_y = 37;
+            uint16_t color_btn_x = 8;
             // red
             UART_Print_Esc("[41m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 0, color_btn_width, color_btn_height);
+            UART_Draw_Box(BLANK_CHAR, color_btn_x + 0, color_btn_y, color_btn_width, color_btn_height);
             // blue
             UART_Print_Esc("[42m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 4, color_btn_width, color_btn_height);
+            UART_Draw_Box(BLANK_CHAR, color_btn_x + 8, color_btn_y, color_btn_width, color_btn_height);
             // green
             UART_Print_Esc("[44m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 8, color_btn_width, color_btn_height);
+            UART_Draw_Box(BLANK_CHAR, color_btn_x + 16, color_btn_y, color_btn_width, color_btn_height);
             // white
             UART_Print_Esc("[47m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 12, color_btn_width, color_btn_height);
+            UART_Draw_Box(BLANK_CHAR, color_btn_x + 24, color_btn_y, color_btn_width, color_btn_height);
             // black
             UART_Print_Esc("[40m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 16, color_btn_width, color_btn_height);
+            UART_Draw_Box(BLANK_CHAR, color_btn_x + 32, color_btn_y, color_btn_width, color_btn_height);
 
             // reset background
             UART_Print_Esc("[0m");
             //  done
-            UART_Print_Esc("[44;97H"); UART_Print("------");
-            UART_Print_Esc("[45;97H"); UART_Print(" DONE ");
-            UART_Print_Esc("[46;97H"); UART_Print("------");
+            UART_Print_Esc("[37;67H"); UART_Print("------");
+            UART_Print_Esc("[38;67H"); UART_Print(" DONE ");
+            UART_Print_Esc("[39;67H"); UART_Print("------");
             break;
         case SAVE:
             UART_Print_Esc("[10;98H"); UART_Print("SAVE");
