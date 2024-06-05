@@ -134,14 +134,35 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
             char buff[BUFF_LEN];
             sprintf(buff, "[%u;%uH", y_min, x_min);
             UART_Print_Esc(buff);
-            for (uint8_t i = 0; i < height; i++) {
+            for (uint8_t i = 1; i <= height; i++) {
                 for (uint8_t j = 0; j < width; j++) {
-                    UART_Print_Char(CANVAS_CHAR);
+                    UART_Print_Char(BLANK_CHAR);
                 }
-                // move cursor back
+                // move cursor down
                 sprintf(buff, "[%u;%uH", y_min + i, x_min);
                 UART_Print_Esc(buff);
             }
+
+            // color buttons
+            uint8_t color_btn_width  = 8;
+            uint8_t color_btn_height = 3;
+            uint16_t color_btn_x = 170;
+            uint16_t color_btn_y = 14;
+            // red
+            UART_Print_Esc("[41m");
+            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 0, color_btn_width, color_btn_height);
+            // blue
+            UART_Print_Esc("[42m");
+            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 4, color_btn_width, color_btn_height);
+            // green
+            UART_Print_Esc("[44m");
+            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 8, color_btn_width, color_btn_height);
+            // white
+            UART_Print_Esc("[47m");
+            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 12, color_btn_width, color_btn_height);
+            // black
+            UART_Print_Esc("[40m");
+            UART_Draw_Box(BLANK_CHAR, color_btn_x, color_btn_y + 16, color_btn_width, color_btn_height);
 
             // reset background
             UART_Print_Esc("[0m");
@@ -162,4 +183,20 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size) {
 
     // restore cursor position
     UART_Print_Esc("8");
+}
+
+void UART_Draw_Box(char c, uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
+    // move cursor
+    char buff[BUFF_LEN];
+    sprintf(buff, "[%u;%uH", y, x);
+    UART_Print_Esc(buff);
+
+    for (uint16_t i = 1; i <= h; i++) {
+        for (uint16_t j = 0; j < w; j++) {
+            UART_Print_Char(c);
+        }
+        // move cursor down
+        sprintf(buff, "[%u;%uH", y + i, x);
+        UART_Print_Esc(buff);
+    }
 }

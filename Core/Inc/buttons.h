@@ -15,7 +15,13 @@ extern const button_t BTN_SIZING_MEDIUM;
 extern const button_t BTN_SIZING_LARGE;
 extern const button_t BTN_SIZING_BACK;
 
+extern const button_t BTN_CANVAS_RED;
+extern const button_t BTN_CANVAS_GREEN;
+extern const button_t BTN_CANVAS_BLUE;
+extern const button_t BTN_CANVAS_WHITE;
+extern const button_t BTN_CANVAS_BLACK;
 extern const button_t BTN_CANVAS_DONE;
+
 extern const button_t BTN_SAVE_DONE;
 extern const button_t BTN_BROWSER_BACK;
 extern const button_t BTN_BROWSER_SELECT;

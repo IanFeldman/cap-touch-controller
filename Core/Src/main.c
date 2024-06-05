@@ -15,6 +15,7 @@ int main(void)
     state_t state = TITLE;
     status_t status = { 0, 0, 0 };
     UART_Update_Screen(state, 0);
+    //UART_Update_Screen(CANVAS, SIZE_LARGE);
 
     while (1)
     {
@@ -32,21 +33,37 @@ void Move_Cursor(status_t status) {
 }
 
 void On_Click(state_t *state, status_t status) {
+    static uint8_t size = 0;
+    static uint8_t color = 1;
+    uint8_t state_update = 0;
+
+    // get location
     uint16_t x = status.screen_x;
     uint16_t y = status.screen_y;
-    uint8_t btn_press = 0;
-    uint8_t size = 0;
+
+    // update canvas size
+    button_t canvas = {
+        (TERMINAL_WIDTH  >> 1) - (size << 1),
+        (TERMINAL_HEIGHT >> 1) - (size >> 1),
+        size << 2,
+        size
+    };
+
+    // update color
+    char buff[BUFF_LEN];
+    sprintf(buff, "[4%um", color);
+    UART_Print_Esc(buff);
 
     switch (*state) {
         case TITLE:
             if (On_Btn(x, y, BTN_TITLE_NEW)) {
                 *state = SIZING;
-                btn_press = 1;
+                state_update = 1;
                 break;
             }
             if (On_Btn(x, y, BTN_TITLE_OPEN)) {
                 *state = BROWSER;
-                btn_press = 1;
+                state_update = 1;
                 break;
             }
             break;
@@ -54,33 +71,64 @@ void On_Click(state_t *state, status_t status) {
             if (On_Btn(x, y, BTN_SIZING_SMALL)) {
                 size = SIZE_SMALL;
                 *state = CANVAS;
-                btn_press = 1;
+                state_update = 1;
                 break;
             }
             if (On_Btn(x, y, BTN_SIZING_MEDIUM)) {
                 size = SIZE_MEDIUM;
                 *state = CANVAS;
-                btn_press = 1;
+                state_update = 1;
                 break;
             }
             if (On_Btn(x, y, BTN_SIZING_LARGE)) {
                 size = SIZE_LARGE;
                 *state = CANVAS;
-                btn_press = 1;
+                state_update = 1;
                 break;
             }
             if (On_Btn(x, y, BTN_SIZING_BACK)) {
                 *state = TITLE;
-                btn_press = 1;
+                state_update = 1;
                 break;
             }
             break;
+        case CANVAS:
+            if (On_Btn(x, y, canvas)) {
+                // draw to canvas
+                UART_Print_Char(BLANK_CHAR);
+                break;
+            }
+            if (On_Btn(x, y, BTN_CANVAS_RED)) {
+                color = 1;
+                break;
+            }
+            if (On_Btn(x, y, BTN_CANVAS_GREEN)) {
+                color = 2;
+                break;
+            }
+            if (On_Btn(x, y, BTN_CANVAS_BLUE)) {
+                color = 4;
+                break;
+            }
+            if (On_Btn(x, y, BTN_CANVAS_WHITE)) {
+                color = 7;
+                break;
+            }
+            if (On_Btn(x, y, BTN_CANVAS_BLACK)) {
+                color = 0;
+                break;
+            }
+            if (On_Btn(x, y, BTN_CANVAS_DONE)) {
+                *state = SAVE;
+                state_update = 1;
+                break;
+            }
         default:
             break;
     }
 
     // update screen if there was a press
-    if (btn_press) UART_Update_Screen(*state, size);
+    if (state_update) UART_Update_Screen(*state, size);
     // clear click
     click = 0;
 }

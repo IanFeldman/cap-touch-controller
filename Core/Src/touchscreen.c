@@ -77,6 +77,11 @@ void TOUCH_Read(status_t *status) {
     status->touch_x = (data5 << 8) + data6;
 
     // find screen pos
+    /*
     status->screen_y = TERMINAL_HEIGHT - TERMINAL_HEIGHT * status->touch_y / TOUCH_Y_MAX;
     status->screen_x = TERMINAL_WIDTH * status->touch_x / TOUCH_X_MAX;
+    */
+    // upside down
+    status->screen_y = TERMINAL_HEIGHT * status->touch_y / TOUCH_Y_MAX;
+    status->screen_x = TERMINAL_WIDTH - TERMINAL_WIDTH * status->touch_x / TOUCH_X_MAX;
 }
