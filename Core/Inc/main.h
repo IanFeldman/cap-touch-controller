@@ -17,7 +17,7 @@ extern "C" {
 #define SIZE_SMALL_X  32
 #define SIZE_MEDIUM_Y 16
 #define SIZE_MEDIUM_X 64
-#define SIZE_LARGE_Y  30 // 128 bytes extra for page write, name
+#define SIZE_LARGE_Y  30 // 256 bytes extra for header
 #define SIZE_LARGE_X 128
 
 #define BUFF_LEN 14
