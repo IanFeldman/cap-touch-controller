@@ -58,6 +58,9 @@ void EEPROM_Write_Byte(uint8_t write_data, uint16_t address) {
     I2C2->TXDR = address & 0xff;
     while(!(I2C2->ISR & I2C_ISR_TXIS));
     I2C2->TXDR = write_data;
+
+    // delay to allow write cycle
+    for (uint16_t k = 0; k < WRITE_CYCLE_DELAY; k++);
 }
 
 uint8_t EEPROM_Read_Byte(uint16_t address) {
@@ -133,6 +136,11 @@ uint8_t EEPROM_Write_Image(uint8_t name[NAME_LEN_MAX], uint8_t *image, uint8_t s
         I2C2->TXDR = header[i];
     }
 
+    free(header);
+
+    // delay to allow write cycle
+    for (uint16_t k = 0; k < WRITE_CYCLE_DELAY; k++);
+
     // write pages (write address at start of each page)
     // go to data address
     address += MEM_HEADER_SIZE;
@@ -160,11 +168,10 @@ uint8_t EEPROM_Write_Image(uint8_t name[NAME_LEN_MAX], uint8_t *image, uint8_t s
         }
         // increment address
         address += MEM_PAGE_SIZE;
+        // delay to allow write cycle
+        for (uint16_t k = 0; k < WRITE_CYCLE_DELAY; k++);
     }
-
-    free(header);
     free(image);
-
     return 0;
 }
 

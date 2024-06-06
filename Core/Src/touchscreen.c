@@ -80,15 +80,15 @@ void Touchscreen_Read(status_t *status) {
 
     // update status
     status->update = data2;
-    status->touch_y = data4;
     status->touch_x = (data5 << 8) + data6;
+    status->touch_y = data4;
 
-    // find screen pos
+    // find screen position
     /*
     status->screen_y = TERMINAL_HEIGHT - TERMINAL_HEIGHT * status->touch_y / TOUCH_Y_MAX;
     status->screen_x = TERMINAL_WIDTH * status->touch_x / TOUCH_X_MAX;
     */
-    // upside down
-    status->term_y = TERMINAL_HEIGHT * status->touch_y / TOUCH_Y_MAX;
+    // reverse screen position
     status->term_x = TERMINAL_WIDTH - TERMINAL_WIDTH * status->touch_x / TOUCH_X_MAX;
+    status->term_y = TERMINAL_HEIGHT * status->touch_y / TOUCH_Y_MAX;
 }

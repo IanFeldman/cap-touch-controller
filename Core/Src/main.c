@@ -21,6 +21,8 @@ int main(void)
     EEPROM_Init();
     __enable_irq();
 
+    EEPROM_Clear();
+
     state_t  state  = TITLE;
     status_t status = { 0, 0, 0 };
     properties_t properties = { 0, 0, 1, 0};
@@ -37,10 +39,9 @@ int main(void)
         if (!properties.cursor_allowed && char_input) {
             On_Press(&state, &properties);
         }
-        // read screen
-        Touchscreen_Read(&status);
         // move cursor
         if (properties.cursor_allowed) {
+            Touchscreen_Read(&status);
             Move_Cursor(status);
         }
     }
@@ -59,8 +60,8 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
     uint8_t state_update = 0;
 
     // get location
-    uint16_t y = status.term_y;
     uint16_t x = status.term_x;
+    uint16_t y = status.term_y;
 
     // update color
     char buff[BUFF_LEN];
@@ -82,20 +83,20 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
             break;
         case SIZING:
             if (On_Btn(x, y, BTN_SIZING_SMALL)) {
-                properties->size_y = SIZE_SMALL_Y;
-                properties->size_x = SIZE_SMALL_X;
+                canvas.w = SIZE_SMALL_X;
+                canvas.h = SIZE_SMALL_Y;
                 *state = CANVAS;
                 state_update = 1;
             }
             else if (On_Btn(x, y, BTN_SIZING_MEDIUM)) {
-                properties->size_y = SIZE_MEDIUM_Y;
-                properties->size_x = SIZE_MEDIUM_X;
+                canvas.w = SIZE_MEDIUM_X;
+                canvas.h = SIZE_MEDIUM_Y;
                 *state = CANVAS;
                 state_update = 1;
             }
             else if (On_Btn(x, y, BTN_SIZING_LARGE)) {
-                properties->size_y = SIZE_LARGE_Y;
-                properties->size_x = SIZE_LARGE_X;
+                canvas.w = SIZE_LARGE_X;
+                canvas.h = SIZE_LARGE_Y;
                 *state = CANVAS;
                 state_update = 1;
             }
@@ -105,13 +106,13 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
                 break;
             }
             if (state_update) {
-                // create image if user selected a size
+                // find x, y pos
+                canvas.x = (TERMINAL_WIDTH  >> 1) - (canvas.w >> 1) + 1;
+                canvas.y = (TERMINAL_HEIGHT >> 1) - (canvas.h >> 1);
+                // create image if user selected a size (freed when written to eeprom)
                 properties->image = (uint8_t*)malloc(sizeof(uint8_t) * canvas.w * canvas.h);
-                // create canvas 'button'
-                canvas.x = (TERMINAL_WIDTH  >> 1) - (properties->size_x << 1) + 1;
-                canvas.y = (TERMINAL_HEIGHT >> 1) - (properties->size_y >> 1);
-                canvas.w = properties->size_x;
-                canvas.h = properties->size_y;
+                properties->canvas_width = canvas.w;
+                properties->canvas_height = canvas.h;
             }
             break;
         case CANVAS:
@@ -120,8 +121,8 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
                 UART_Print_Char(BLANK_CHAR);
                 UART_Print_Esc("[1D");
                 // get image location
-                uint16_t image_y = y - canvas.y;
                 uint16_t image_x = x - canvas.x;
+                uint16_t image_y = y - canvas.y;
                 // write to ram
                 properties->image[image_y * canvas.w + image_x] = color;
                 break;
@@ -157,7 +158,7 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
     }
 
     // update screen if there was a press
-    if (state_update) UART_Update_Screen(*state, properties->size_x, properties->size_y);
+    if (state_update) UART_Update_Screen(*state, canvas.w, canvas.h);
 }
 
 void On_Press(state_t *state, properties_t *properties) {
@@ -180,9 +181,10 @@ void On_Press(state_t *state, properties_t *properties) {
     // enter
     else if (char_input == CHAR_RETURN) {
         // write file
-        uint8_t err = EEPROM_Write_Image(filename, properties->image, properties->size_x, properties->size_y);
+        uint8_t err = EEPROM_Write_Image(filename, properties->image, properties->canvas_width, properties->canvas_height);
         if (err) {
             UART_Print("ERROR OCCURED");
+            char_input = 0;
             return;
         }
         // change state

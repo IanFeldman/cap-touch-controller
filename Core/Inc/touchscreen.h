@@ -12,10 +12,10 @@
 // specifically status of touchscreen
 typedef struct {
     uint8_t  update;
-    uint8_t  touch_y;
     uint16_t touch_x;
-    uint16_t term_y;
+    uint8_t  touch_y;
     uint16_t term_x;
+    uint16_t term_y;
 } status_t;
 
 void Touchscreen_Init();

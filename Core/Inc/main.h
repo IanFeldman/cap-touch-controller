@@ -9,16 +9,16 @@ extern "C" {
 #include "stm32l4xx_hal.h"
 #include "touchscreen.h"
 
-#define TERMINAL_HEIGHT 40
 #define TERMINAL_WIDTH  138
+#define TERMINAL_HEIGHT 40
 
 // sizings
-#define SIZE_SMALL_Y   8
 #define SIZE_SMALL_X  32
-#define SIZE_MEDIUM_Y 16
+#define SIZE_SMALL_Y   8
 #define SIZE_MEDIUM_X 64
-#define SIZE_LARGE_Y  30 // 256 bytes extra for header
+#define SIZE_MEDIUM_Y 16
 #define SIZE_LARGE_X 128
+#define SIZE_LARGE_Y  30 // 256 bytes extra for header
 
 #define BUFF_LEN 14
 
@@ -38,8 +38,8 @@ typedef enum {
 
 // properties that must be passed between On_Click() and On_Press()
 typedef struct {
-    uint8_t size_x;
-    uint8_t size_y;
+    uint8_t canvas_width;
+    uint8_t canvas_height;
     uint8_t cursor_allowed;
     uint8_t *image;
 } properties_t;

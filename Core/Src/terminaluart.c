@@ -127,10 +127,10 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_siz
             // background to white
             UART_Print_Esc("[47m");
             // move cursor
-            uint8_t height = canvas_size_y;
             uint8_t width  = canvas_size_x;
-            uint16_t y_min = (TERMINAL_HEIGHT >> 1) - (height >> 1);
+            uint8_t height = canvas_size_y;
             uint16_t x_min = (TERMINAL_WIDTH  >> 1) - (width  >> 1) + 1;
+            uint16_t y_min = (TERMINAL_HEIGHT >> 1) - (height >> 1);
             char buff[BUFF_LEN];
             sprintf(buff, "[%u;%uH", y_min, x_min);
             UART_Print_Esc(buff);
@@ -146,8 +146,9 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_siz
             // color buttons
             uint8_t color_btn_width  = 8;
             uint8_t color_btn_height = 3;
-            uint16_t color_btn_y = 37;
             uint16_t color_btn_x = 8;
+            uint16_t color_btn_y = 37;
+
             // red
             UART_Print_Esc("[41m");
             UART_Draw_Box(BLANK_CHAR, color_btn_x + 0, color_btn_y, color_btn_width, color_btn_height);
