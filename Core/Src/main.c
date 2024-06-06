@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// set by EXTI ISRs
 volatile uint8_t click_prelim;
 volatile uint8_t click;
+// set by UART ISR
 volatile uint8_t char_input;
 
 int main(void)
@@ -19,28 +21,26 @@ int main(void)
     EEPROM_Init();
     __enable_irq();
 
-    uint8_t  cursor_allowed = 1;
     state_t  state  = TITLE;
     status_t status = { 0, 0, 0 };
+    properties_t properties = { 0, 0, 1, 0};
+
     UART_Update_Screen(state, 0, 0);
 
     while (1)
     {
         // poll for click
         if (click) {
-            On_Click(&state, status, &cursor_allowed);
+            On_Click(&state, status, &properties);
         }
-
         // poll for key
-        if (!cursor_allowed && char_input) {
-            On_Press(&state, &cursor_allowed);
+        if (!properties.cursor_allowed && char_input) {
+            On_Press(&state, &properties);
         }
-
         // read screen
         Touchscreen_Read(&status);
-
         // move cursor
-        if (cursor_allowed) {
+        if (properties.cursor_allowed) {
             Move_Cursor(status);
         }
     }
@@ -53,25 +53,14 @@ void Move_Cursor(status_t status) {
     UART_Print_Esc(buff);
 }
 
-// state machine, returns cursor_allowed
-void On_Click(state_t *state, status_t status, uint8_t *cursor_allowed) {
-    static uint8_t size_y = 0;
-    static uint8_t size_x = 0;
+void On_Click(state_t *state, status_t status, properties_t *properties) {
     static uint8_t color = 1;
-    static uint8_t *image = 0;
+    static button_t canvas = { 0, 0, 0, 0};
     uint8_t state_update = 0;
 
     // get location
     uint16_t y = status.term_y;
     uint16_t x = status.term_x;
-
-    // update canvas size
-    button_t canvas = {
-        (TERMINAL_WIDTH  >> 1) - (size_x << 1) + 1,
-        (TERMINAL_HEIGHT >> 1) - (size_y >> 1),
-        size_x,
-        size_y
-    };
 
     // update color
     char buff[BUFF_LEN];
@@ -93,20 +82,20 @@ void On_Click(state_t *state, status_t status, uint8_t *cursor_allowed) {
             break;
         case SIZING:
             if (On_Btn(x, y, BTN_SIZING_SMALL)) {
-                size_y = SIZE_SMALL_Y;
-                size_x = SIZE_SMALL_X;
+                properties->size_y = SIZE_SMALL_Y;
+                properties->size_x = SIZE_SMALL_X;
                 *state = CANVAS;
                 state_update = 1;
             }
             else if (On_Btn(x, y, BTN_SIZING_MEDIUM)) {
-                size_y = SIZE_MEDIUM_Y;
-                size_x = SIZE_MEDIUM_X;
+                properties->size_y = SIZE_MEDIUM_Y;
+                properties->size_x = SIZE_MEDIUM_X;
                 *state = CANVAS;
                 state_update = 1;
             }
             else if (On_Btn(x, y, BTN_SIZING_LARGE)) {
-                size_y = SIZE_LARGE_Y;
-                size_x = SIZE_LARGE_X;
+                properties->size_y = SIZE_LARGE_Y;
+                properties->size_x = SIZE_LARGE_X;
                 *state = CANVAS;
                 state_update = 1;
             }
@@ -117,7 +106,12 @@ void On_Click(state_t *state, status_t status, uint8_t *cursor_allowed) {
             }
             if (state_update) {
                 // create image if user selected a size
-                image = (uint8_t*)malloc(sizeof(uint8_t) * canvas.w * canvas.h);
+                properties->image = (uint8_t*)malloc(sizeof(uint8_t) * canvas.w * canvas.h);
+                // create canvas 'button'
+                canvas.x = (TERMINAL_WIDTH  >> 1) - (properties->size_x << 1) + 1;
+                canvas.y = (TERMINAL_HEIGHT >> 1) - (properties->size_y >> 1);
+                canvas.w = properties->size_x;
+                canvas.h = properties->size_y;
             }
             break;
         case CANVAS:
@@ -129,7 +123,7 @@ void On_Click(state_t *state, status_t status, uint8_t *cursor_allowed) {
                 uint16_t image_y = y - canvas.y;
                 uint16_t image_x = x - canvas.x;
                 // write to ram
-                image[image_y * canvas.w + image_x] = color;
+                properties->image[image_y * canvas.w + image_x] = color;
                 break;
             }
             if (On_Btn(x, y, BTN_CANVAS_RED)) {
@@ -154,7 +148,7 @@ void On_Click(state_t *state, status_t status, uint8_t *cursor_allowed) {
             }
             if (On_Btn(x, y, BTN_CANVAS_DONE)) {
                 *state = SAVE;
-                *cursor_allowed = 0;
+                properties->cursor_allowed = 0;
                 state_update = 1;
                 break;
             }
@@ -163,10 +157,10 @@ void On_Click(state_t *state, status_t status, uint8_t *cursor_allowed) {
     }
 
     // update screen if there was a press
-    if (state_update) UART_Update_Screen(*state, size_x, size_y);
+    if (state_update) UART_Update_Screen(*state, properties->size_x, properties->size_y);
 }
 
-void On_Press(state_t *state, uint8_t *cursor_allowed) {
+void On_Press(state_t *state, properties_t *properties) {
     static uint8_t filename[NAME_LEN_MAX];
     static uint8_t filename_idx = 0;
 
@@ -185,10 +179,15 @@ void On_Press(state_t *state, uint8_t *cursor_allowed) {
     }
     // enter
     else if (char_input == CHAR_RETURN) {
-        // todo: write file
+        // write file
+        uint8_t err = EEPROM_Write_Image(filename, properties->image, properties->size_x, properties->size_y);
+        if (err) {
+            UART_Print("ERROR OCCURED");
+            return;
+        }
         // change state
         *state = TITLE;
-        *cursor_allowed = 1;
+        properties->cursor_allowed = 1;
         UART_Update_Screen(*state, 0, 0);
     }
     else if (char_input != CHAR_DELETE && filename_idx < NAME_LEN_MAX) {

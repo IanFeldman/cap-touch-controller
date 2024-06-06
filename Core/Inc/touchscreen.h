@@ -9,6 +9,7 @@
 
 #include "stm32l4xx_hal.h"
 
+// specifically status of touchscreen
 typedef struct {
     uint8_t  update;
     uint8_t  touch_y;

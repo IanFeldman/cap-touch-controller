@@ -36,11 +36,19 @@ typedef enum {
     PREVIEW
 } state_t;
 
+// properties that must be passed between On_Click() and On_Press()
+typedef struct {
+    uint8_t size_x;
+    uint8_t size_y;
+    uint8_t cursor_allowed;
+    uint8_t *image;
+} properties_t;
+
 void Error_Handler(void);
 void SystemClock_Config(void);
 void Move_Cursor(status_t status);
-void On_Click(state_t *state, status_t status, uint8_t *cursor_allowed);
-void On_Press(state_t *state, uint8_t *cursor_allowed);
+void On_Click(state_t *state, status_t status, properties_t *properties);
+void On_Press(state_t *state, properties_t *properties);
 
 #ifdef __cplusplus
 }

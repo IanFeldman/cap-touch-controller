@@ -42,18 +42,11 @@ void EEPROM_Init() {
     I2C2->CR2 |= (EEPROM_ADDRESS << 1);
 }
 
-void EEPROM_Write(uint8_t write_data, uint16_t address) {
-    // auto end
-    I2C2->CR2 |= I2C_CR2_AUTOEND;
-    // 7 bit address mode
-    I2C2->CR2 &= ~(I2C_CR2_ADD10);
-    //set the address
-    I2C2->CR2 &= ~(I2C_CR2_SADD);
-    I2C2->CR2 |= (EEPROM_ADDRESS << 1);
-    // set to write
-    I2C2->CR2 &= ~(I2C_CR2_RD_WRN);
+void EEPROM_Write_Byte(uint8_t write_data, uint16_t address) {
+    // write mode
+    I2C2->CR2 &= ~I2C_CR2_RD_WRN;
     // 3 byte transfer
-    I2C2->CR2 &= ~(I2C_CR2_NBYTES);
+    I2C2->CR2 &= ~I2C_CR2_NBYTES;
     I2C2->CR2 |= (3 << I2C_CR2_NBYTES_Pos);
     // start
     I2C2->CR2 |= (1 << I2C_CR2_START_Pos);
@@ -101,7 +94,7 @@ uint8_t EEPROM_Write_Image(uint8_t name[NAME_LEN_MAX], uint8_t *image, uint8_t s
     // find block
     uint8_t block = EEPROM_Find_Free_Block();
     if (block == BLOCK_NOT_FOUND) {
-        return 0;
+        return 1;
     }
 
     /* HEADER
@@ -122,15 +115,57 @@ uint8_t EEPROM_Write_Image(uint8_t name[NAME_LEN_MAX], uint8_t *image, uint8_t s
 
     // write header
     uint16_t address = block * MEM_BLOCK_SIZE;
+    uint8_t num_bytes = header_size_used + 2; // add two for address
     I2C2->CR2 &= ~(I2C_CR2_RD_WRN);     // write
     I2C2->CR2 &= ~(I2C_CR2_NBYTES);     // set number of bytes to write
-    I2C2->CR2 |= (header_size_used << I2C_CR2_NBYTES_Pos);
+    I2C2->CR2 |= (num_bytes << I2C_CR2_NBYTES_Pos);
     // start
     I2C2->CR2 |= (1 << I2C_CR2_START_Pos);
-    // TODO
+    // write address
+    while(!(I2C2->ISR & I2C_ISR_TXIS));
+    I2C2->TXDR = address >> 8;
+    while(!(I2C2->ISR & I2C_ISR_TXIS));
+    I2C2->TXDR = address & 0xFF;
+    // write header
+    for (uint16_t i = 0; i < header_size_used; i++) {
+        // await flag, then write
+        while(!(I2C2->ISR & I2C_ISR_TXIS));
+        I2C2->TXDR = header[i];
+    }
+
+    // write pages (write address at start of each page)
+    // go to data address
+    address += MEM_HEADER_SIZE;
+    num_bytes = MEM_PAGE_SIZE + 2; // add two for address
+    uint8_t page_cnt = (size_x * size_y) / MEM_PAGE_SIZE;
+    // set number of bytes
+    I2C2->CR2 &= ~(I2C_CR2_NBYTES);
+    I2C2->CR2 |= (num_bytes << I2C_CR2_NBYTES_Pos);
+
+    // iterate over number of pages we will write
+    for (uint8_t i = 0; i < page_cnt; i++) {
+        // write address
+        I2C2->CR2 |= (1 << I2C_CR2_START_Pos);
+        // upper
+        while(!(I2C2->ISR & I2C_ISR_TXIS));
+        I2C2->TXDR = address >> 8;
+        // lower
+        while(!(I2C2->ISR & I2C_ISR_TXIS));
+        I2C2->TXDR = address & 0xFF;
+        // write data
+        for (uint8_t j = 0; j < MEM_PAGE_SIZE; j++) {
+            // image
+            while(!(I2C2->ISR & I2C_ISR_TXIS));
+            I2C2->TXDR = image[i * MEM_PAGE_SIZE + j];
+        }
+        // increment address
+        address += MEM_PAGE_SIZE;
+    }
 
     free(header);
     free(image);
+
+    return 0;
 }
 
 /* return block idx on success, BLOCK_NOT_FOUND on failure */
@@ -149,4 +184,12 @@ uint8_t EEPROM_Find_Free_Block() {
         return BLOCK_NOT_FOUND;
     }
     return block;
+}
+
+/* clears block_used flag in every block. Only use to clear ROM*/
+void EEPROM_Clear() {
+    for (uint8_t block = 0; block < MEM_BLOCK_CNT; block++) {
+        uint16_t address = block * MEM_BLOCK_SIZE;
+        EEPROM_Write_Byte(0x0, address);
+    }
 }

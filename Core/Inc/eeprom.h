@@ -12,6 +12,7 @@
 #define MEM_BLOCK_CNT    16
 #define MEM_BLOCK_SIZE 4096
 #define MEM_HEADER_SIZE 256
+#define MEM_PAGE_SIZE   128
 
 #define BLOCK_NOT_FOUND 0xFF
 
@@ -25,10 +26,10 @@
 
 
 void EEPROM_Init();
-void EEPROM_Write(uint8_t write_data, uint16_t address);
-
+void EEPROM_Write_Byte(uint8_t write_data, uint16_t address);
 uint8_t EEPROM_Read_Byte(uint16_t address);
 uint8_t EEPROM_Write_Image(uint8_t name[NAME_LEN_MAX], uint8_t *image, uint8_t size_x, uint8_t size_y);
 uint8_t EEPROM_Find_Free_Block();
+void EEPROM_Clear();
 
 #endif
