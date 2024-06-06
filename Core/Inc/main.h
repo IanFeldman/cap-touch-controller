@@ -24,6 +24,7 @@ extern "C" {
 
 #define CHAR_DELETE 127
 #define CHAR_RETURN 13
+#define CHAR_ESCAPE 27
 
 // FSM
 typedef enum {
@@ -32,8 +33,6 @@ typedef enum {
     CANVAS,
     SAVE,
     BROWSER,
-    OPTIONS,
-    PREVIEW
 } state_t;
 
 // properties that must be passed between On_Click() and On_Press()

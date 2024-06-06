@@ -6,10 +6,17 @@
 // must press for 1 ms
 #define PRESS_MIN_CYCLES 4000
 
+#define BTN_BROWSER_ENTRY_COL1_X   13
+#define BTN_BROWSER_ENTRY_COL2_X   78
+#define BTN_BROWSER_ENTRY_INIT_Y         4
+#define BTN_BROWSER_ENTRY_SPACING_Y 4
+
 typedef struct {
     uint16_t x, y, w, h;
+    char *text;
 } button_t;
 
+extern const button_t BTN_TITLE;
 extern const button_t BTN_TITLE_NEW;
 extern const button_t BTN_TITLE_OPEN;
 
@@ -25,9 +32,9 @@ extern const button_t BTN_CANVAS_WHITE;
 extern const button_t BTN_CANVAS_BLACK;
 extern const button_t BTN_CANVAS_DONE;
 
-extern const button_t BTN_SAVE_DONE;
+extern const button_t BTN_BROWSER_ENTRY;
 extern const button_t BTN_BROWSER_BACK;
-extern const button_t BTN_BROWSER_SELECT;
+
 extern const button_t BTN_OPTIONS_EDIT;
 extern const button_t BTN_OPTIONS_BACK;
 extern const button_t BTN_OPTIONS_PREVIEW;

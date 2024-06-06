@@ -24,8 +24,7 @@ int main(void)
     state_t  state  = TITLE;
     status_t status = { 0, 0, 0 };
     properties_t properties = { 0, 0, 1, 0};
-
-    UART_Update_Screen(state, 0, 0);
+    UART_Update_Screen(state, 0);
 
     while (1)
     {
@@ -61,11 +60,6 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
     uint16_t x = status.term_x;
     uint16_t y = status.term_y;
 
-    // update color
-    char buff[BUFF_LEN];
-    sprintf(buff, "[4%um", color);
-    UART_Print_Esc(buff);
-
     switch (*state) {
         case TITLE:
             if (On_Btn(x, y, BTN_TITLE_NEW)) {
@@ -79,6 +73,7 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
                 break;
             }
             break;
+
         case SIZING:
             if (On_Btn(x, y, BTN_SIZING_SMALL)) {
                 canvas.w = SIZE_SMALL_X;
@@ -113,10 +108,16 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
                 properties->canvas_height = canvas.h;
             }
             break;
+
         case CANVAS:
+            // update color
+            char buff[BUFF_LEN];
+            sprintf(buff, "[4%um", color);
+            UART_Print_Esc(buff);
+
             if (On_Btn(x, y, canvas)) {
                 // draw to canvas
-                UART_Print_Char(BLANK_CHAR);
+                UART_Print_Char(PIXEL_CHAR);
                 UART_Print_Esc("[1D");
                 // get image location
                 uint16_t image_x = x - canvas.x;
@@ -151,7 +152,13 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
                 state_update = 1;
                 break;
             }
+
         case SAVE:
+            // TODO file buttons
+            // button_t buttons[MEM_BLOCK_CNT];
+            for (uint8_t i = 0; i < MEM_BLOCK_CNT; i++) {
+
+            }
             break;
         case BROWSER:
             break;
@@ -160,7 +167,7 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
     }
 
     // update screen if there was a press
-    if (state_update) UART_Update_Screen(*state, canvas.w, canvas.h);
+    if (state_update) UART_Update_Screen(*state, &canvas);
 }
 
 void On_Press(state_t *state, properties_t *properties) {
@@ -170,8 +177,16 @@ void On_Press(state_t *state, properties_t *properties) {
     // clear attributes
     UART_Print_Esc("[0m");
 
+    // exit
+    if (char_input == CHAR_ESCAPE) {
+        free(properties->image);
+        // change state
+        *state = TITLE;
+        properties->cursor_allowed = 1;
+        UART_Update_Screen(*state, 0);
+    }
     // delete
-    if (char_input == CHAR_DELETE && filename_idx > 0) {
+    else if (char_input == CHAR_DELETE && filename_idx > 0) {
         // move cursor left
         UART_Print_Esc("[1D");
         // clear
@@ -201,7 +216,7 @@ void On_Press(state_t *state, properties_t *properties) {
         // change state
         *state = TITLE;
         properties->cursor_allowed = 1;
-        UART_Update_Screen(*state, 0, 0);
+        UART_Update_Screen(*state, 0);
     }
     else if (char_input != CHAR_DELETE && filename_idx < NAME_LEN_MAX - 1) {
         filename[filename_idx++] = char_input;

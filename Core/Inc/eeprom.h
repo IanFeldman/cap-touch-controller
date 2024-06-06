@@ -21,7 +21,7 @@ typedef struct {
     uint8_t block_used;
     uint8_t size_x;
     uint8_t size_y;
-    uint8_t name[NAME_LEN_MAX];
+    char name[NAME_LEN_MAX];
 } header_t;
 
 

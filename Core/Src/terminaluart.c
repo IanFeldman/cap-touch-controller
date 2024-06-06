@@ -1,6 +1,8 @@
+#include "buttons.h"
 #include "eeprom.h"
 #include "main.h"
 #include "terminaluart.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -70,142 +72,89 @@ void UART_Reset_Screen() {
 }
 
 /* update the screen based on what state it just switched to */
-void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_size_y) {
+void UART_Update_Screen(state_t state, button_t *canvas) {
     // save cursor position
     UART_Print_Esc("7");
     UART_Reset_Screen();
 
     switch(state) {
         case TITLE:
-            UART_Print_Esc("[15;45H"); UART_Print(" _____                   ____  _        _       _ "          );
-            UART_Print_Esc("[16;45H"); UART_Print("|_   _|__ _ __ _ __ ___ / ___|| | _____| |_ ___| |__"        );
-            UART_Print_Esc("[17;45H"); UART_Print("  | |/ _ \\ '__| '_ ` _ \\\\___ \\| |/ / _ \\ __/ __| '_ \\" );
-            UART_Print_Esc("[18;45H"); UART_Print("  | |  __/ |  | | | | | |___) |   <  __/ || (__| | | |"      );
-            UART_Print_Esc("[19;45H"); UART_Print("  |_|\\___|_|  |_| |_| |_|____/|_|\\_\\___|\\__\\___|_| |_|" );
-
-            UART_Print_Esc("[25;60H"); UART_Print("-----");
-            UART_Print_Esc("[26;60H"); UART_Print(" NEW ");
-            UART_Print_Esc("[27;60H"); UART_Print("-----");
-
-            UART_Print_Esc("[25;78H"); UART_Print("------");
-            UART_Print_Esc("[26;78H"); UART_Print(" OPEN ");
-            UART_Print_Esc("[27;78H"); UART_Print("------");
+            UART_Print_Btn(BTN_TITLE, 0);
+            UART_Print_Btn(BTN_TITLE_NEW, 0);
+            UART_Print_Btn(BTN_TITLE_OPEN, 0);
             break;
 
         case SIZING:
-            UART_Print_Esc("[7;64H"); UART_Print("== SIZING ==");
+            UART_Print_Esc("[7;64H");
+            UART_Print("== SIZING ==");
 
-            UART_Print_Esc("[17;40H"); UART_Print(" _________ ");
-            UART_Print_Esc("[18;40H"); UART_Print("|         |");
-            UART_Print_Esc("[19;40H"); UART_Print("|  SMALL  |");
-            UART_Print_Esc("[20;40H"); UART_Print("|  32x8   |");
-            UART_Print_Esc("[21;40H"); UART_Print("|_________|");
-
-            UART_Print_Esc("[16;63H"); UART_Print(" ____________ ");
-            UART_Print_Esc("[17;63H"); UART_Print("|            |");
-            UART_Print_Esc("[18;63H"); UART_Print("|            |");
-            UART_Print_Esc("[19;63H"); UART_Print("|   MEDIUM   |");
-            UART_Print_Esc("[20;63H"); UART_Print("|   64x16    |");
-            UART_Print_Esc("[21;63H"); UART_Print("|            |");
-            UART_Print_Esc("[22;63H"); UART_Print("|____________|");
-
-            UART_Print_Esc("[15;89H"); UART_Print(" _______________");
-            UART_Print_Esc("[16;89H"); UART_Print("|               |");
-            UART_Print_Esc("[17;89H"); UART_Print("|               |");
-            UART_Print_Esc("[18;89H"); UART_Print("|               |");
-            UART_Print_Esc("[19;89H"); UART_Print("|     LARGE     |");
-            UART_Print_Esc("[20;89H"); UART_Print("|     128x32    |");
-            UART_Print_Esc("[21;89H"); UART_Print("|               |");
-            UART_Print_Esc("[22;89H"); UART_Print("|               |");
-            UART_Print_Esc("[23;89H"); UART_Print("|_______________|");
-
-            UART_Print_Esc("[30;67H"); UART_Print("------");
-            UART_Print_Esc("[31;67H"); UART_Print(" BACK ");
-            UART_Print_Esc("[32;67H"); UART_Print("------");
+            UART_Print_Btn(BTN_SIZING_SMALL, 0);
+            UART_Print_Btn(BTN_SIZING_MEDIUM, 0);
+            UART_Print_Btn(BTN_SIZING_LARGE, 0);
             break;
 
         case CANVAS:
-            UART_Print_Esc("[2;64H"); UART_Print("== CANVAS ==");
-            // draw canvas
+            UART_Print_Esc("[2;64H");
+            UART_Print("== CANVAS ==");
             // background to white
             UART_Print_Esc("[47m");
-            // move cursor
-            uint8_t width  = canvas_size_x;
-            uint8_t height = canvas_size_y;
-            uint16_t x_min = (TERMINAL_WIDTH  >> 1) - (width  >> 1) + 1;
-            uint16_t y_min = (TERMINAL_HEIGHT >> 1) - (height >> 1);
-            char buff[BUFF_LEN];
-            sprintf(buff, "[%u;%uH", y_min, x_min);
-            UART_Print_Esc(buff);
-            for (uint8_t i = 1; i <= height; i++) {
-                for (uint8_t j = 0; j < width; j++) {
-                    UART_Print_Char(BLANK_CHAR);
-                }
-                // move cursor down
-                sprintf(buff, "[%u;%uH", y_min + i, x_min);
-                UART_Print_Esc(buff);
-            }
-
-            // color buttons
-            uint8_t color_btn_width  = 8;
-            uint8_t color_btn_height = 3;
-            uint16_t color_btn_x = 8;
-            uint16_t color_btn_y = 37;
-
+            UART_Print_Btn(*canvas, 1);
             // red
             UART_Print_Esc("[41m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x + 0, color_btn_y, color_btn_width, color_btn_height);
-            // blue
-            UART_Print_Esc("[42m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x + 8, color_btn_y, color_btn_width, color_btn_height);
+            UART_Print_Btn(BTN_CANVAS_RED, 1);
             // green
+            UART_Print_Esc("[42m");
+            UART_Print_Btn(BTN_CANVAS_GREEN, 1);
+            // blue
             UART_Print_Esc("[44m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x + 16, color_btn_y, color_btn_width, color_btn_height);
+            UART_Print_Btn(BTN_CANVAS_BLUE, 1);
             // white
             UART_Print_Esc("[47m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x + 24, color_btn_y, color_btn_width, color_btn_height);
+            UART_Print_Btn(BTN_CANVAS_WHITE, 1);
             // black
             UART_Print_Esc("[40m");
-            UART_Draw_Box(BLANK_CHAR, color_btn_x + 32, color_btn_y, color_btn_width, color_btn_height);
-
+            UART_Print_Btn(BTN_CANVAS_BLACK, 1);
             // reset background
             UART_Print_Esc("[0m");
-            //  done
-            UART_Print_Esc("[37;67H"); UART_Print("------");
-            UART_Print_Esc("[38;67H"); UART_Print(" DONE ");
-            UART_Print_Esc("[39;67H"); UART_Print("------");
+            UART_Print_Btn(BTN_CANVAS_DONE, 0);
             break;
 
         case SAVE:
-            UART_Print_Esc("[10;64H"); UART_Print("== SAVE ==");
-            UART_Print_Esc("[15;40H"); UART_Print("Save as:                                  (32 character max)");
-            UART_Print_Esc("[20;60H"); UART_Print("Hit [Enter] when done");
+            UART_Print_Esc("[10;64H");
+            UART_Print("== SAVE ==");
+
+            UART_Print_Esc("[15;40H");
+            UART_Print("Save as:                                  (32 character max)");
+
+            UART_Print_Esc("[20;60H");
+            UART_Print("Hit [Enter] when done");
+
+            UART_Print_Esc("[22;57H");
+            UART_Print("Hit [Esc] to discard sketch");
             // move cursor back to type spot
             UART_Print_Esc("[15;49H");
             // return so dont restore cursor position
             return;
 
         case BROWSER:
-            UART_Print_Esc("[2;64H"); UART_Print("== BROWSER ==");
+            UART_Print_Esc("[2;64H");
+            UART_Print("== BROWSER ==");
 
             // iterate over all files
             header_t files[MEM_BLOCK_CNT];
-            uint8_t x_1 = 13;
-            uint8_t x_2 = 78;
-            uint8_t y_1 = 4;
-            uint8_t x = x_1;
-            uint8_t y = y_1;
-            uint8_t spacing = 4;
+            uint8_t x = BTN_BROWSER_ENTRY_COL1_X;
+            uint8_t y = BTN_BROWSER_ENTRY_INIT_Y;
             for (uint8_t i = 0; i < MEM_BLOCK_CNT; i++) {
                 // get header
                 EEPROM_Read_Header(&files[i], i);
-
-                // print line
-                sprintf(buff, "[%u;%uH", y, x);
-                UART_Print_Esc(buff);
-                UART_Print("--------------------------------------------------");
+                // create button
+                button_t entry = BTN_BROWSER_ENTRY;
+                entry.x = x;
+                entry.y = y;
+                UART_Print_Btn(entry, 0);
 
                 // move cursor
+                char buff[BUFF_LEN];
                 sprintf(buff, "[%u;%uH", y + 1, x);
                 UART_Print_Esc(buff);
 
@@ -220,23 +169,16 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_siz
                     UART_Print("NO FILE FOUND");
                 }
 
-                // move cursor
-                sprintf(buff, "[%u;%uH", y + 2, x);
-                UART_Print_Esc(buff);
-                UART_Print("--------------------------------------------------");
-
-                y += spacing;
+                y += BTN_BROWSER_ENTRY_SPACING_Y;
 
                 if (i == (MEM_BLOCK_CNT / 2) - 1) {
-                    x = x_2;
-                    y = y_1;
+                    x = BTN_BROWSER_ENTRY_COL2_X;
+                    y = BTN_BROWSER_ENTRY_INIT_Y;
                 }
             }
 
             //  done
-            UART_Print_Esc("[37;67H"); UART_Print("------");
-            UART_Print_Esc("[38;67H"); UART_Print(" BACK ");
-            UART_Print_Esc("[39;67H"); UART_Print("------");
+            UART_Print_Btn(BTN_BROWSER_BACK, 0);
             break;
         default:
             break;
@@ -246,18 +188,18 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_siz
     UART_Print_Esc("8");
 }
 
-void UART_Draw_Box(char c, uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-    // move cursor
+void UART_Print_Btn(button_t btn, uint8_t is_solid) {
     char buff[BUFF_LEN];
-    sprintf(buff, "[%u;%uH", y, x);
-    UART_Print_Esc(buff);
-
-    for (uint16_t i = 1; i <= h; i++) {
-        for (uint16_t j = 0; j < w; j++) {
+    for (uint16_t j = 0; j < btn.h; j++) {
+        // move cursor
+        sprintf(buff, "[%u;%uH", btn.y + j, btn.x);
+        UART_Print_Esc(buff);
+        for (uint16_t i = 0; i < btn.w; i++) {
+            char c = btn.text[j * btn.w + i];
+            if (is_solid) {
+                c = CANVAS_CHAR;
+            }
             UART_Print_Char(c);
         }
-        // move cursor down
-        sprintf(buff, "[%u;%uH", y + i, x);
-        UART_Print_Esc(buff);
     }
 }

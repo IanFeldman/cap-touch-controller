@@ -1,24 +1,78 @@
 #include "buttons.h"
 #include "stm32l4xx_hal.h"
+#include <stdio.h>
 
-const button_t BTN_TITLE_NEW        = { 60, 25, 5, 3 };
-const button_t BTN_TITLE_OPEN       = { 78, 25, 6, 3 };
+const button_t BTN_TITLE = { 45, 15, 54, 5,
+        " _____                   ____  _        _       _     "
+        "|_   _|__ _ __ _ __ ___ / ___|| | _____| |_ ___| |__  "
+        "  | |/ _ \\ '__| '_ ` _ \\\\___ \\| |/ / _ \\ __/ __| '_ \\ "
+        "  | |  __/ |  | | | | | |___) |   <  __/ || (__| | | |"
+        "  |_|\\___|_|  |_| |_| |_|____/|_|\\_\\___|\\__\\___|_| |_|"
+};
+const button_t BTN_TITLE_NEW  = { 60, 25, 5, 3,
+        "-----"
+        " NEW "
+        "-----"
+};
 
-const button_t BTN_SIZING_SMALL     = { 40, 17, 11, 5 };
-const button_t BTN_SIZING_MEDIUM    = { 63, 16, 14, 7 };
-const button_t BTN_SIZING_LARGE     = { 89, 15, 17, 9 };
-const button_t BTN_SIZING_BACK      = { 67, 30,  6, 3 };
+const button_t BTN_TITLE_OPEN = { 78, 25, 6, 3,
+        "------"
+        " OPEN "
+        "------"
+};
+const button_t BTN_SIZING_SMALL = { 40, 17, 11, 5,
+        " _________ "
+        "|         |"
+        "|  SMALL  |"
+        "|  32x8   |"
+        "|_________|"
+};
+const button_t BTN_SIZING_MEDIUM    = { 63, 16, 14, 7,
+        " ____________ "
+        "|            |"
+        "|            |"
+        "|   MEDIUM   |"
+        "|   64x16    |"
+        "|            |"
+        "|____________|"
+};
+const button_t BTN_SIZING_LARGE     = { 89, 15, 17, 9,
+        " _______________ "
+        "|               |"
+        "|               |"
+        "|               |"
+        "|     LARGE     |"
+        "|     128x32    |"
+        "|               |"
+        "|               |"
+        "|_______________|"
+};
+const button_t BTN_SIZING_BACK      = { 67, 30,  6, 3,
+        "------"
+        " BACK "
+        "------"
+};
+const button_t BTN_CANVAS_RED       = {  8, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_GREEN     = { 16, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_BLUE      = { 24, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_WHITE     = { 32, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_BLACK     = { 40, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_DONE      = { 67, 37, 6, 3,
+        "------"
+        " DONE "
+        "------"
+};
+const button_t BTN_BROWSER_ENTRY = { 0, 0, 40, 3,
+        "--------------------------------------------------"
+        "                                                  "
+        "--------------------------------------------------"
+};
+const button_t BTN_BROWSER_BACK     = { 80, 20, 40, 20,
+        "------"
+        " BACK "
+        "------"
+};
 
-const button_t BTN_CANVAS_RED       = {  8, 37, 8, 3 };
-const button_t BTN_CANVAS_GREEN     = { 16, 37, 8, 3 };
-const button_t BTN_CANVAS_BLUE      = { 24, 37, 8, 3 };
-const button_t BTN_CANVAS_WHITE     = { 32, 37, 8, 3 };
-const button_t BTN_CANVAS_BLACK     = { 40, 37, 8, 3 };
-const button_t BTN_CANVAS_DONE      = { 67, 37, 6, 3 };
-
-const button_t BTN_SAVE_DONE        = { 80, 20, 40, 20 };
-const button_t BTN_BROWSER_BACK     = { 80, 20, 40, 20 };
-const button_t BTN_BROWSER_SELECT   = { 80, 20, 40, 20 };
 const button_t BTN_OPTIONS_EDIT     = { 80, 20, 40, 20 };
 const button_t BTN_OPTIONS_BACK     = { 80, 20, 40, 20 };
 const button_t BTN_OPTIONS_PREVIEW  = { 80, 20, 40, 20 };
