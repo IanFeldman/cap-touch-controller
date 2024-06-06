@@ -20,7 +20,7 @@ extern "C" {
 #define SIZE_LARGE_X 128
 #define SIZE_LARGE_Y  30 // 256 bytes extra for header
 
-#define BUFF_LEN 14
+#define BUFF_LEN 20
 
 #define CHAR_DELETE 127
 #define CHAR_RETURN 13

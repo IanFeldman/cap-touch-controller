@@ -1,3 +1,4 @@
+#include "eeprom.h"
 #include "main.h"
 #include "terminaluart.h"
 #include <stdio.h>
@@ -90,6 +91,7 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_siz
             UART_Print_Esc("[26;78H"); UART_Print(" OPEN ");
             UART_Print_Esc("[27;78H"); UART_Print("------");
             break;
+
         case SIZING:
             UART_Print_Esc("[7;64H"); UART_Print("== SIZING ==");
 
@@ -121,6 +123,7 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_siz
             UART_Print_Esc("[31;67H"); UART_Print(" BACK ");
             UART_Print_Esc("[32;67H"); UART_Print("------");
             break;
+
         case CANVAS:
             UART_Print_Esc("[2;64H"); UART_Print("== CANVAS ==");
             // draw canvas
@@ -172,6 +175,7 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_siz
             UART_Print_Esc("[38;67H"); UART_Print(" DONE ");
             UART_Print_Esc("[39;67H"); UART_Print("------");
             break;
+
         case SAVE:
             UART_Print_Esc("[10;64H"); UART_Print("== SAVE ==");
             UART_Print_Esc("[15;40H"); UART_Print("Save as:                                  (32 character max)");
@@ -180,8 +184,59 @@ void UART_Update_Screen(state_t state, uint8_t canvas_size_x, uint8_t canvas_siz
             UART_Print_Esc("[15;49H");
             // return so dont restore cursor position
             return;
+
         case BROWSER:
-            UART_Print_Esc("[20;85H"); UART_Print("BROWSER");
+            UART_Print_Esc("[2;64H"); UART_Print("== BROWSER ==");
+
+            // iterate over all files
+            header_t files[MEM_BLOCK_CNT];
+            uint8_t x_1 = 13;
+            uint8_t x_2 = 78;
+            uint8_t y_1 = 4;
+            uint8_t x = x_1;
+            uint8_t y = y_1;
+            uint8_t spacing = 4;
+            for (uint8_t i = 0; i < MEM_BLOCK_CNT; i++) {
+                // get header
+                EEPROM_Read_Header(&files[i], i);
+
+                // print line
+                sprintf(buff, "[%u;%uH", y, x);
+                UART_Print_Esc(buff);
+                UART_Print("--------------------------------------------------");
+
+                // move cursor
+                sprintf(buff, "[%u;%uH", y + 1, x);
+                UART_Print_Esc(buff);
+
+                if (files[i].block_used) {
+                    // print name
+                    UART_Print(files[i].name);
+                    // print size
+                    sprintf(buff, " (%ux%u)", files[i].size_x, files[i].size_y);
+                    UART_Print(buff);
+                }
+                else {
+                    UART_Print("NO FILE FOUND");
+                }
+
+                // move cursor
+                sprintf(buff, "[%u;%uH", y + 2, x);
+                UART_Print_Esc(buff);
+                UART_Print("--------------------------------------------------");
+
+                y += spacing;
+
+                if (i == (MEM_BLOCK_CNT / 2) - 1) {
+                    x = x_2;
+                    y = y_1;
+                }
+            }
+
+            //  done
+            UART_Print_Esc("[37;67H"); UART_Print("------");
+            UART_Print_Esc("[38;67H"); UART_Print(" BACK ");
+            UART_Print_Esc("[39;67H"); UART_Print("------");
             break;
         default:
             break;

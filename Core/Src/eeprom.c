@@ -93,27 +93,21 @@ uint8_t EEPROM_Read_Byte(uint16_t address) {
 /* Writes image to block in EEPROM
  * return 0 on success, 1 on failure
  */
-uint8_t EEPROM_Write_Image(uint8_t name[NAME_LEN_MAX], uint8_t *image, uint8_t size_x, uint8_t size_y) {
+uint8_t EEPROM_Write_Image(header_t header, uint8_t *image) {
     // find block
     uint8_t block = EEPROM_Find_Free_Block();
     if (block == BLOCK_NOT_FOUND) {
         return 1;
     }
 
-    /* HEADER
-     * block_used
-     * x size
-     * y size
-     * name[]
-     * reserved[]
-     */
+    // convert header to array
     uint8_t header_size_used = 3 + NAME_LEN_MAX;
-    uint8_t *header = (uint8_t*)malloc(sizeof(uint8_t) * header_size_used);
-    header[0] = 1;
-    header[1] = size_x;
-    header[2] = size_y;
+    uint8_t *header_arr = (uint8_t*)malloc(sizeof(uint8_t) * header_size_used);
+    header_arr[0] = header.block_used;
+    header_arr[1] = header.size_x;
+    header_arr[2] = header.size_y;
     for (uint8_t i = 0; i < NAME_LEN_MAX; i++) {
-        header[3 + i] = name[i];
+        header_arr[3 + i] = header.name[i];
     }
 
     // write header
@@ -133,10 +127,9 @@ uint8_t EEPROM_Write_Image(uint8_t name[NAME_LEN_MAX], uint8_t *image, uint8_t s
     for (uint16_t i = 0; i < header_size_used; i++) {
         // await flag, then write
         while(!(I2C2->ISR & I2C_ISR_TXIS));
-        I2C2->TXDR = header[i];
+        I2C2->TXDR = header_arr[i];
     }
-
-    free(header);
+    free(header_arr);
 
     // delay to allow write cycle
     for (uint16_t k = 0; k < WRITE_CYCLE_DELAY; k++);
@@ -145,7 +138,7 @@ uint8_t EEPROM_Write_Image(uint8_t name[NAME_LEN_MAX], uint8_t *image, uint8_t s
     // go to data address
     address += MEM_HEADER_SIZE;
     num_bytes = MEM_PAGE_SIZE + 2; // add two for address
-    uint8_t page_cnt = (size_x * size_y) / MEM_PAGE_SIZE;
+    uint8_t page_cnt = (header.size_x * header.size_y) / MEM_PAGE_SIZE;
     // set number of bytes
     I2C2->CR2 &= ~(I2C_CR2_NBYTES);
     I2C2->CR2 |= (num_bytes << I2C_CR2_NBYTES_Pos);
@@ -198,5 +191,30 @@ void EEPROM_Clear() {
     for (uint8_t block = 0; block < MEM_BLOCK_CNT; block++) {
         uint16_t address = block * MEM_BLOCK_SIZE;
         EEPROM_Write_Byte(0x0, address);
+    }
+}
+
+void EEPROM_Read_Header(header_t *header, uint8_t block_index) {
+    header->block_used = EEPROM_Read_Byte(block_index * MEM_BLOCK_SIZE);
+    if (!header->block_used) return;
+
+    // sequential read continues at next address
+    // still in read mode
+    uint8_t num_bytes = 2 + NAME_LEN_MAX;
+    I2C2->CR2 &= ~(I2C_CR2_NBYTES);
+    I2C2->CR2 |= (num_bytes << I2C_CR2_NBYTES_Pos);
+    // start
+    I2C2->CR2 |= (1 << I2C_CR2_START_Pos);
+
+    // read sizes
+    while(!(I2C2->ISR & I2C_ISR_RXNE));
+    header->size_x = I2C2->RXDR;
+    while(!(I2C2->ISR & I2C_ISR_RXNE));
+    header->size_y = I2C2->RXDR;
+
+    // read name
+    for (uint8_t i = 0; i < NAME_LEN_MAX; i++) {
+        while(!(I2C2->ISR & I2C_ISR_RXNE));
+        header->name[i] = I2C2->RXDR;
     }
 }

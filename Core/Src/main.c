@@ -21,8 +21,6 @@ int main(void)
     EEPROM_Init();
     __enable_irq();
 
-    EEPROM_Clear();
-
     state_t  state  = TITLE;
     status_t status = { 0, 0, 0 };
     properties_t properties = { 0, 0, 1, 0};
@@ -153,6 +151,10 @@ void On_Click(state_t *state, status_t status, properties_t *properties) {
                 state_update = 1;
                 break;
             }
+        case SAVE:
+            break;
+        case BROWSER:
+            break;
         default:
             break;
     }
@@ -180,8 +182,17 @@ void On_Press(state_t *state, properties_t *properties) {
     }
     // enter
     else if (char_input == CHAR_RETURN) {
+        // add null term
+        filename[filename_idx] = '\0';
         // write file
-        uint8_t err = EEPROM_Write_Image(filename, properties->image, properties->canvas_width, properties->canvas_height);
+        header_t header;
+        header.block_used = 1;
+        header.size_x = properties->canvas_width;
+        header.size_y = properties->canvas_height;
+        for (uint8_t i = 0; i < NAME_LEN_MAX; i++) {
+            header.name[i] = filename[i];
+        }
+        uint8_t err = EEPROM_Write_Image(header, properties->image);
         if (err) {
             UART_Print("ERROR OCCURED");
             char_input = 0;
@@ -192,7 +203,7 @@ void On_Press(state_t *state, properties_t *properties) {
         properties->cursor_allowed = 1;
         UART_Update_Screen(*state, 0, 0);
     }
-    else if (char_input != CHAR_DELETE && filename_idx < NAME_LEN_MAX) {
+    else if (char_input != CHAR_DELETE && filename_idx < NAME_LEN_MAX - 1) {
         filename[filename_idx++] = char_input;
         UART_Print_Char(char_input);
     }
