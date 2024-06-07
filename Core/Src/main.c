@@ -24,7 +24,7 @@ int main(void)
     info_t info = {
             TITLE,              // state
             { 0, 0, 0, 0, 0},   // canvas
-            NULL_BLOCK_INDEX,         // block index
+            NULL_BLOCK_INDEX,   // block index
             1                   // cursor allowed
     };
     status_t status = { 0, 0, 0 };
@@ -59,6 +59,8 @@ void Move_Cursor(status_t status) {
 
 void On_Click(info_t *info, status_t status) {
     static uint8_t color = COLOR_WHITE;
+    static uint16_t x_prev = 0;
+    static uint16_t y_prev = 0;
     uint8_t state_update = 0;
     uint8_t allocate_mem = 0;
     uint16_t x = status.term_x;
@@ -115,7 +117,8 @@ void On_Click(info_t *info, status_t status) {
             UART_Print_Esc(buff);
 
             if (On_Btn(x, y, info->canvas)) {
-                // draw to canvas
+                if (x == x_prev && y == y_prev) break;
+                // draw to canvas if we have moved cursor
                 UART_Print_Char(PIXEL_CHAR);
                 UART_Print_Esc("[1D");
                 // get image location
@@ -229,6 +232,10 @@ void On_Click(info_t *info, status_t status) {
         default:
             break;
     }
+
+    // record pos
+    x_prev = x;
+    y_prev = y;
 
     // update screen if there was a press
     if (state_update) {
