@@ -165,7 +165,6 @@ uint8_t EEPROM_Write_Image(header_t *header, uint8_t *image) {
         // delay to allow write cycle
         for (uint16_t k = 0; k < WRITE_CYCLE_DELAY; k++);
     }
-    free(image);
     return 0;
 }
 

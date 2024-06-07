@@ -33,6 +33,8 @@ extern "C" {
 #define COLOR_WHITE 7
 #define COLOR_BLACK 0
 
+#define BLOCK_IDX_UNUSED 0xFF
+
 // FSM
 typedef enum {
     TITLE,
@@ -42,12 +44,18 @@ typedef enum {
     BROWSER,
 } state_t;
 
+typedef struct {
+    state_t  state;
+    button_t canvas;
+    uint8_t  block_idx;
+    uint8_t  cursor_allowed;
+} info_t;
+
 void Error_Handler(void);
 void SystemClock_Config(void);
 void Move_Cursor(status_t status);
-void On_Click(state_t *state, button_t *canvas, status_t status, uint8_t *cursor_allowed);
-void On_Press(state_t *state, button_t *canvas, uint8_t *cursor_allowed);
-
+void On_Click(info_t *info, status_t status);
+void On_Press(info_t *info);
 void Get_Canvas_XY(button_t *canvas);
 
 #ifdef __cplusplus

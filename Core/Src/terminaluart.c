@@ -144,8 +144,8 @@ void UART_Update_Screen(state_t state, button_t canvas) {
 
             // iterate over all files
             header_t files[MEM_BLOCK_CNT];
-            uint8_t x = BTN_BROWSER_ENTRY_COL1_X;
-            uint8_t y = BTN_BROWSER_ENTRY_INIT_Y;
+            uint16_t x = BTN_BROWSER_ENTRY_COL1_X;
+            uint16_t y = BTN_BROWSER_ENTRY_INIT_Y;
             for (uint8_t i = 0; i < MEM_BLOCK_CNT; i++) {
                 // get header
                 EEPROM_Read_Header(&files[i], i);

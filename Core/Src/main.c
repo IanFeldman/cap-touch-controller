@@ -20,26 +20,32 @@ int main(void)
     EEPROM_Init();
     __enable_irq();
 
-    state_t  state  = TITLE;
+    // initialize variables
+    info_t info = {
+            TITLE,              // state
+            { 0, 0, 0, 0, 0},   // canvas
+            BLOCK_IDX_UNUSED,   // block_idx
+            1                   // cursor allowed
+    };
     status_t status = { 0, 0, 0 };
-    uint8_t  cursor_allowed = 1;
-    button_t canvas = { 0, 0, 0, 0, 0 };
-    UART_Update_Screen(state, canvas);
+
+    // update screen for title state
+    UART_Update_Screen(info.state, info.canvas);
 
     while (1)
     {
         // poll for click
         if (click) {
-            On_Click(&state, &canvas, status, &cursor_allowed);
-        }
-        // poll for key
-        if (!cursor_allowed && char_input) {
-            On_Press(&state, &canvas, &cursor_allowed);
+            On_Click(&info, status);
         }
         // move cursor
-        if (cursor_allowed) {
+        if (info.cursor_allowed) {
             Touchscreen_Read(&status);
             Move_Cursor(status);
+        }
+        // poll for key
+        else if (char_input) {
+            On_Press(&info);
         }
     }
 }
@@ -51,24 +57,22 @@ void Move_Cursor(status_t status) {
     UART_Print_Esc(buff);
 }
 
-void On_Click(state_t *state, button_t *canvas, status_t status, uint8_t *cursor_allowed) {
-    static uint8_t color = 1;
+void On_Click(info_t *info, status_t status) {
+    static uint8_t color = COLOR_WHITE;
     uint8_t state_update = 0;
     uint8_t allocate_mem = 0;
-
-    // get location
     uint16_t x = status.term_x;
     uint16_t y = status.term_y;
 
-    switch (*state) {
+    switch (info->state) {
         case TITLE:
             if (On_Btn(x, y, BTN_TITLE_NEW)) {
-                *state = SIZING;
+                info->state = SIZING;
                 state_update = 1;
                 break;
             }
             if (On_Btn(x, y, BTN_TITLE_OPEN)) {
-                *state = BROWSER;
+                info->state = BROWSER;
                 state_update = 1;
                 break;
             }
@@ -76,30 +80,30 @@ void On_Click(state_t *state, button_t *canvas, status_t status, uint8_t *cursor
 
         case SIZING:
             if (On_Btn(x, y, BTN_SIZING_SMALL)) {
-                canvas->w = SIZE_SMALL_X;
-                canvas->h = SIZE_SMALL_Y;
-                *state = CANVAS;
+                info->canvas.w = SIZE_SMALL_X;
+                info->canvas.h = SIZE_SMALL_Y;
+                info->state = CANVAS;
                 state_update = 1;
             }
             else if (On_Btn(x, y, BTN_SIZING_MEDIUM)) {
-                canvas->w = SIZE_MEDIUM_X;
-                canvas->h = SIZE_MEDIUM_Y;
-                *state = CANVAS;
+                info->canvas.w = SIZE_MEDIUM_X;
+                info->canvas.h = SIZE_MEDIUM_Y;
+                info->state = CANVAS;
                 state_update = 1;
             }
             else if (On_Btn(x, y, BTN_SIZING_LARGE)) {
-                canvas->w = SIZE_LARGE_X;
-                canvas->h = SIZE_LARGE_Y;
-                *state = CANVAS;
+                info->canvas.w = SIZE_LARGE_X;
+                info->canvas.h = SIZE_LARGE_Y;
+                info->state = CANVAS;
                 state_update = 1;
             }
             else if (On_Btn(x, y, BTN_SIZING_BACK)) {
-                *state = TITLE;
+                info->state = TITLE;
                 state_update = 1;
                 break;
             }
             if (state_update) {
-                Get_Canvas_XY(canvas);
+                Get_Canvas_XY(&info->canvas);
                 allocate_mem = 1; // set flag to malloc AFTER update screen
             }
             break;
@@ -110,15 +114,15 @@ void On_Click(state_t *state, button_t *canvas, status_t status, uint8_t *cursor
             sprintf(buff, "[4%um", color);
             UART_Print_Esc(buff);
 
-            if (On_Btn(x, y, *canvas)) {
+            if (On_Btn(x, y, info->canvas)) {
                 // draw to canvas
                 UART_Print_Char(PIXEL_CHAR);
                 UART_Print_Esc("[1D");
                 // get image location
-                uint16_t image_x = x - canvas->x;
-                uint16_t image_y = y - canvas->y;
+                uint16_t image_x = x - info->canvas.x;
+                uint16_t image_y = y - info->canvas.y;
                 // write to ram
-                canvas->data[image_y * canvas->w + image_x] = color;
+                info->canvas.data[image_y * info->canvas.w + image_x] = color;
                 break;
             }
             if (On_Btn(x, y, BTN_CANVAS_RED)) {
@@ -142,8 +146,8 @@ void On_Click(state_t *state, button_t *canvas, status_t status, uint8_t *cursor
                 break;
             }
             if (On_Btn(x, y, BTN_CANVAS_DONE)) {
-                *state = SAVE;
-                *cursor_allowed = 0;
+                info->state = SAVE;
+                info->cursor_allowed = 0;
                 state_update = 1;
                 break;
             }
@@ -153,46 +157,57 @@ void On_Click(state_t *state, button_t *canvas, status_t status, uint8_t *cursor
             break;
 
         case BROWSER:
+            // check for back button first bc
+            // if we click empty entry we break
+            if (On_Btn(x, y, BTN_BROWSER_BACK)) {
+                info->state = TITLE;
+                state_update = 1;
+                break;
+            }
             // file buttons
             button_t entry = { 0, 0, 0, 0};
             entry.w = BTN_BROWSER_ENTRY.w;
             entry.h = BTN_BROWSER_ENTRY.h;
 
             // determine if file selected
+            // (place buttons)
             uint8_t file_selected = 0;
+            uint16_t btn_x = BTN_BROWSER_ENTRY_COL1_X;
+            uint16_t btn_y = BTN_BROWSER_ENTRY_INIT_Y;
             uint8_t i;
             for (i = 0; i < MEM_BLOCK_CNT; i++) {
-                // determine x
-                if (i >= (MEM_BLOCK_CNT / 2) - 1) {
-                    entry.x = BTN_BROWSER_ENTRY_COL2_X;
-                }
-                // determine y
-                entry.y = BTN_BROWSER_ENTRY_INIT_Y + i * BTN_BROWSER_ENTRY_SPACING_Y;
+                entry.x = btn_x;
+                entry.y = btn_y;
 
                 // check for selection
                 if (On_Btn(x, y, entry)) {
                     file_selected = 1;
                     break;
                 }
+
+                // inc button coords
+                btn_y += BTN_BROWSER_ENTRY_SPACING_Y;
+                if (i == (MEM_BLOCK_CNT / 2) - 1) {
+                    btn_x = BTN_BROWSER_ENTRY_COL2_X;
+                    btn_y = BTN_BROWSER_ENTRY_INIT_Y;
+                }
             }
             if (file_selected) {
                 // read header
                 header_t header;
                 EEPROM_Read_Header(&header, i);
+
+                if (!header.block_used) break;
+
                 // save to canvas
-                canvas->w = header.size_x;
-                canvas->h = header.size_y;
-                Get_Canvas_XY(canvas);
+                info->canvas.w = header.size_x;
+                info->canvas.h = header.size_y;
+                Get_Canvas_XY(&info->canvas);
 
                 // read file into image
-                canvas->data = EEPROM_Read_Image(&header, i);
+                info->canvas.data = EEPROM_Read_Image(&header, i);
                 // update
-                *state = CANVAS;
-                state_update = 1;
-                break;
-            }
-            if (On_Btn(x, y, BTN_BROWSER_BACK)) {
-                *state = TITLE;
+                info->state = CANVAS;
                 state_update = 1;
                 break;
             }
@@ -202,19 +217,23 @@ void On_Click(state_t *state, button_t *canvas, status_t status, uint8_t *cursor
     }
 
     // update screen if there was a press
-    if (state_update) UART_Update_Screen(*state, *canvas);
+    if (state_update) {
+        // dont allow click through screen update
+        click = 0;
+        UART_Update_Screen(info->state, info->canvas);
+    }
     if (allocate_mem) {
         // allocate memory for canvas if we have not yet
+        uint16_t size = info->canvas.w * info->canvas.h;
+        info->canvas.data = (uint8_t*)malloc(sizeof(uint8_t) * size);
         // clear it
-        uint16_t size = canvas->w * canvas->h;
-        canvas->data = (uint8_t*)malloc(sizeof(uint8_t) * size);
         for (uint16_t i = 0; i < size; i++) {
-            canvas->data[i] = COLOR_WHITE;
+            info->canvas.data[i] = COLOR_WHITE;
         }
     }
 }
 
-void On_Press(state_t *state, button_t *canvas, uint8_t *cursor_allowed) {
+void On_Press(info_t *info) {
     static uint8_t filename[NAME_LEN_MAX];
     static uint8_t filename_idx = 0;
 
@@ -223,12 +242,12 @@ void On_Press(state_t *state, button_t *canvas, uint8_t *cursor_allowed) {
 
     // exit
     if (char_input == CHAR_ESCAPE) {
-        free(canvas->data);
-        canvas->data = 0;
+        free(info->canvas.data);
+        info->canvas.data = 0;
         // change state
-        *state = TITLE;
-        *cursor_allowed = 1;
-        UART_Update_Screen(*state, *canvas);
+        info->state = TITLE;
+        info->cursor_allowed = 1;
+        UART_Update_Screen(info->state, info->canvas);
     }
     // delete
     else if (char_input == CHAR_DELETE && filename_idx > 0) {
@@ -247,22 +266,23 @@ void On_Press(state_t *state, button_t *canvas, uint8_t *cursor_allowed) {
         // write file
         header_t header;
         header.block_used = 1;
-        header.size_x = canvas->w;
-        header.size_y = canvas->h;
+        header.size_x = info->canvas.w;
+        header.size_y = info->canvas.h;
         for (uint8_t i = 0; i < NAME_LEN_MAX; i++) {
             header.name[i] = filename[i];
         }
-        uint8_t err = EEPROM_Write_Image(&header, canvas->data);
-        canvas->data = 0;
+        uint8_t err = EEPROM_Write_Image(&header, info->canvas.data);
+        free(info->canvas.data);
+        info->canvas.data = 0;
         if (err) {
             UART_Print("ERROR OCCURED");
             char_input = 0;
             return;
         }
         // change state
-        *state = TITLE;
-        *cursor_allowed = 1;
-        UART_Update_Screen(*state, *canvas);
+        info->state = TITLE;
+        info->cursor_allowed = 1;
+        UART_Update_Screen(info->state, info->canvas);
     }
     else if (char_input != CHAR_DELETE && filename_idx < NAME_LEN_MAX - 1) {
         filename[filename_idx++] = char_input;
