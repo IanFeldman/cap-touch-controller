@@ -118,7 +118,8 @@ void UART_Update_Screen(state_t state, button_t canvas) {
             UART_Print_Btn(BTN_CANVAS_BLACK, 1);
             // reset background
             UART_Print_Esc("[0m");
-            UART_Print_Btn(BTN_CANVAS_DONE, 0);
+            UART_Print_Btn(BTN_CANVAS_SAVE, 0);
+            UART_Print_Btn(BTN_CANVAS_DELETE, 0);
             break;
 
         case SAVE:
@@ -131,8 +132,6 @@ void UART_Update_Screen(state_t state, button_t canvas) {
             UART_Print_Esc("[20;60H");
             UART_Print("Hit [Enter] when done");
 
-            UART_Print_Esc("[22;57H");
-            UART_Print("Hit [Esc] to discard sketch");
             // move cursor back to type spot
             UART_Print_Esc("[15;54H");
             // return so dont restore cursor position

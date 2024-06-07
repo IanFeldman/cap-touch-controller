@@ -24,7 +24,7 @@ int main(void)
     info_t info = {
             TITLE,              // state
             { 0, 0, 0, 0, 0},   // canvas
-            BLOCK_IDX_UNUSED,   // block_idx
+            NULL_BLOCK_INDEX,         // block index
             1                   // cursor allowed
     };
     status_t status = { 0, 0, 0 };
@@ -145,9 +145,22 @@ void On_Click(info_t *info, status_t status) {
                 color = COLOR_BLACK;
                 break;
             }
-            if (On_Btn(x, y, BTN_CANVAS_DONE)) {
+            if (On_Btn(x, y, BTN_CANVAS_SAVE)) {
                 info->state = SAVE;
                 info->cursor_allowed = 0;
+                state_update = 1;
+                break;
+            }
+            if (On_Btn(x, y, BTN_CANVAS_DELETE)) {
+                // block_index will unused be set for new sketch
+                if (info->block_index != NULL_BLOCK_INDEX) {
+                    // free mem
+                    EEPROM_Free_Block(info->block_index);
+                    info->block_index = NULL_BLOCK_INDEX;
+                }
+                free(info->canvas.data);
+                info->canvas.data = 0;
+                info->state = TITLE;
                 state_update = 1;
                 break;
             }
@@ -199,7 +212,8 @@ void On_Click(info_t *info, status_t status) {
 
                 if (!header.block_used) break;
 
-                // save to canvas
+                // save  info
+                info->block_index = i;
                 info->canvas.w = header.size_x;
                 info->canvas.h = header.size_y;
                 Get_Canvas_XY(&info->canvas);
@@ -240,17 +254,8 @@ void On_Press(info_t *info) {
     // clear attributes
     UART_Print_Esc("[0m");
 
-    // exit
-    if (char_input == CHAR_ESCAPE) {
-        free(info->canvas.data);
-        info->canvas.data = 0;
-        // change state
-        info->state = TITLE;
-        info->cursor_allowed = 1;
-        UART_Update_Screen(info->state, info->canvas);
-    }
     // delete
-    else if (char_input == CHAR_DELETE && filename_idx > 0) {
+    if (char_input == CHAR_DELETE && filename_idx > 0) {
         // move cursor left
         UART_Print_Esc("[1D");
         // clear
@@ -271,7 +276,7 @@ void On_Press(info_t *info) {
         for (uint8_t i = 0; i < NAME_LEN_MAX; i++) {
             header.name[i] = filename[i];
         }
-        uint8_t err = EEPROM_Write_Image(&header, info->canvas.data);
+        uint8_t err = EEPROM_Write_Image(&header, info->canvas.data, info->block_index);
         free(info->canvas.data);
         info->canvas.data = 0;
         if (err) {

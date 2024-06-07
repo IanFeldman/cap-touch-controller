@@ -25,15 +25,12 @@ extern "C" {
 
 #define CHAR_DELETE 127
 #define CHAR_RETURN 13
-#define CHAR_ESCAPE 27
 
 #define COLOR_RED   1
 #define COLOR_GREEN 2
 #define COLOR_BLUE  4
 #define COLOR_WHITE 7
 #define COLOR_BLACK 0
-
-#define BLOCK_IDX_UNUSED 0xFF
 
 // FSM
 typedef enum {
@@ -47,7 +44,7 @@ typedef enum {
 typedef struct {
     state_t  state;
     button_t canvas;
-    uint8_t  block_idx;
+    uint8_t  block_index;
     uint8_t  cursor_allowed;
 } info_t;
 

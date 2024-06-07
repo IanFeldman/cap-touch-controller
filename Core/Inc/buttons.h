@@ -30,15 +30,11 @@ extern const button_t BTN_CANVAS_GREEN;
 extern const button_t BTN_CANVAS_BLUE;
 extern const button_t BTN_CANVAS_WHITE;
 extern const button_t BTN_CANVAS_BLACK;
-extern const button_t BTN_CANVAS_DONE;
+extern const button_t BTN_CANVAS_SAVE;
+extern const button_t BTN_CANVAS_DELETE;
 
 extern const button_t BTN_BROWSER_ENTRY;
 extern const button_t BTN_BROWSER_BACK;
-
-extern const button_t BTN_OPTIONS_EDIT;
-extern const button_t BTN_OPTIONS_BACK;
-extern const button_t BTN_OPTIONS_PREVIEW;
-extern const button_t BTN_PREVIEW_DONE;
 
 uint8_t On_Btn(uint16_t x, uint16_t y, button_t btn);
 

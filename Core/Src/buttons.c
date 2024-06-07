@@ -52,15 +52,20 @@ const button_t BTN_SIZING_BACK      = { 67, 30, 6, 3,
         " BACK "
         "------"
 };
-const button_t BTN_CANVAS_RED       = {  8, 37, 8, 3, 0 };
-const button_t BTN_CANVAS_GREEN     = { 16, 37, 8, 3, 0 };
-const button_t BTN_CANVAS_BLUE      = { 24, 37, 8, 3, 0 };
-const button_t BTN_CANVAS_WHITE     = { 32, 37, 8, 3, 0 };
-const button_t BTN_CANVAS_BLACK     = { 40, 37, 8, 3, 0 };
-const button_t BTN_CANVAS_DONE      = { 67, 37, 6, 3,
+const button_t BTN_CANVAS_RED       = { 50, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_GREEN     = { 58, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_BLUE      = { 66, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_WHITE     = { 74, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_BLACK     = { 82, 37, 8, 3, 0 };
+const button_t BTN_CANVAS_SAVE      = { 110, 37, 6, 3,
         "------"
-        " DONE "
+        " SAVE "
         "------"
+};
+const button_t BTN_CANVAS_DELETE    = { 20, 37, 8, 3,
+        "--------"
+        " DELETE "
+        "--------"
 };
 const button_t BTN_BROWSER_ENTRY = { 0, 0, 50, 3,
         "--------------------------------------------------"

@@ -93,10 +93,11 @@ uint8_t EEPROM_Read_Byte(uint16_t address) {
 /* Writes image to block in EEPROM
  * return 0 on success, 1 on failure
  */
-uint8_t EEPROM_Write_Image(header_t *header, uint8_t *image) {
-    // find block
-    uint8_t block = EEPROM_Find_Free_Block();
-    if (block == BLOCK_NOT_FOUND) {
+uint8_t EEPROM_Write_Image(header_t *header, uint8_t *image, uint8_t block_index) {
+    if (block_index == NULL_BLOCK_INDEX) {
+        block_index = EEPROM_Find_Free_Block();
+    }
+    if (block_index == NULL_BLOCK_INDEX) {
         return 1;
     }
 
@@ -110,8 +111,14 @@ uint8_t EEPROM_Write_Image(header_t *header, uint8_t *image) {
         header_arr[3 + i] = header->name[i];
     }
 
+    // header has space for 256, but we dont want header to exceed a page
+    // for writing purposes
+    if (header_size_used > MEM_PAGE_SIZE) {
+        return 1;
+    }
+
     // write header
-    uint16_t address = block * MEM_BLOCK_SIZE;
+    uint16_t address = block_index * MEM_BLOCK_SIZE;
     uint8_t num_bytes = header_size_used + 2; // add two for address
     I2C2->CR2 &= ~(I2C_CR2_RD_WRN);     // write
     I2C2->CR2 &= ~(I2C_CR2_NBYTES);     // set number of bytes to write
@@ -181,17 +188,23 @@ uint8_t EEPROM_Find_Free_Block() {
     }
     // failure
     if (!block_found) {
-        return BLOCK_NOT_FOUND;
+        return NULL_BLOCK_INDEX;
     }
     return block;
 }
 
 /* clears block_used flag in every block. Only use to clear ROM*/
-void EEPROM_Clear() {
+void EEPROM_Free_All() {
     for (uint8_t block = 0; block < MEM_BLOCK_CNT; block++) {
         uint16_t address = block * MEM_BLOCK_SIZE;
         EEPROM_Write_Byte(0x0, address);
     }
+}
+
+/* reset block_used flag in a specific block */
+void EEPROM_Free_Block(uint8_t block_index) {
+    uint16_t address = block_index * MEM_BLOCK_SIZE;
+    EEPROM_Write_Byte(0x0, address);
 }
 
 void EEPROM_Read_Header(header_t *header, uint8_t block_index) {
