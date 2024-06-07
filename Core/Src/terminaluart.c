@@ -122,10 +122,10 @@ void UART_Update_Screen(state_t state, button_t canvas) {
             break;
 
         case SAVE:
-            UART_Print_Esc("[10;64H");
+            UART_Print_Esc("[10;66H");
             UART_Print("== SAVE ==");
 
-            UART_Print_Esc("[15;40H");
+            UART_Print_Esc("[15;45H");
             UART_Print("Save as:                                  (32 character max)");
 
             UART_Print_Esc("[20;60H");
@@ -134,7 +134,7 @@ void UART_Update_Screen(state_t state, button_t canvas) {
             UART_Print_Esc("[22;57H");
             UART_Print("Hit [Esc] to discard sketch");
             // move cursor back to type spot
-            UART_Print_Esc("[15;49H");
+            UART_Print_Esc("[15;54H");
             // return so dont restore cursor position
             return;
 
