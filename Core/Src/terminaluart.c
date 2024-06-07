@@ -85,6 +85,14 @@ void UART_Update_Screen(state_t state, button_t canvas) {
             break;
 
         case SIZING:
+            // check if there is space to make new block
+            if (EEPROM_Find_Free_Block() == NULL_BLOCK_INDEX) {
+                UART_Print_Esc("[19;45H");
+                UART_Print("Memory full. Please delete sketches to make space.");
+                UART_Print_Btn(BTN_SIZING_BACK, 0);
+                break;
+            }
+
             UART_Print_Esc("[7;64H");
             UART_Print("== SIZING ==");
 

@@ -292,6 +292,7 @@ void On_Press(info_t *info) {
         filename[0] = (uint8_t)'\0';
         filename_idx = 0;
         // change state
+        info->block_index = NULL_BLOCK_INDEX;
         info->state = TITLE;
         info->cursor_allowed = 1;
         UART_Update_Screen(info->state, info->canvas);

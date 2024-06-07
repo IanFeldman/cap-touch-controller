@@ -96,9 +96,9 @@ uint8_t EEPROM_Read_Byte(uint16_t address) {
 uint8_t EEPROM_Write_Image(header_t *header, uint8_t *image, uint8_t block_index) {
     if (block_index == NULL_BLOCK_INDEX) {
         block_index = EEPROM_Find_Free_Block();
-    }
-    if (block_index == NULL_BLOCK_INDEX) {
-        return 1;
+        if (block_index == NULL_BLOCK_INDEX) {
+            return 1;
+        }
     }
 
     // convert header to array
@@ -175,7 +175,7 @@ uint8_t EEPROM_Write_Image(header_t *header, uint8_t *image, uint8_t block_index
     return 0;
 }
 
-/* return block idx on success, BLOCK_NOT_FOUND on failure */
+/* return block idx on success, NULL_BLOCK_INDEX on failure */
 uint8_t EEPROM_Find_Free_Block() {
     uint8_t block;
     uint8_t block_found = 0;
