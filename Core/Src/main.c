@@ -267,7 +267,7 @@ void On_Press(info_t *info) {
     // enter
     else if (char_input == CHAR_RETURN) {
         // add null term
-        filename[filename_idx] = '\0';
+        filename[filename_idx] = (uint8_t)'\0';
         // WRITE FILE
         // create header
         header_t header;
@@ -288,8 +288,9 @@ void On_Press(info_t *info) {
             char_input = 0;
             return;
         }
-        // clear filename
-        filename[0] = '/0';
+        // reset filename
+        filename[0] = (uint8_t)'\0';
+        filename_idx = 0;
         // change state
         info->state = TITLE;
         info->cursor_allowed = 1;
