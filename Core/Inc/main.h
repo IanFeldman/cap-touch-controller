@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+#include "buttons.h"
 #include "stm32l4xx_hal.h"
 #include "touchscreen.h"
 
@@ -26,6 +27,12 @@ extern "C" {
 #define CHAR_RETURN 13
 #define CHAR_ESCAPE 27
 
+#define COLOR_RED   1
+#define COLOR_GREEN 2
+#define COLOR_BLUE  4
+#define COLOR_WHITE 7
+#define COLOR_BLACK 0
+
 // FSM
 typedef enum {
     TITLE,
@@ -35,19 +42,13 @@ typedef enum {
     BROWSER,
 } state_t;
 
-// properties that must be passed between On_Click() and On_Press()
-typedef struct {
-    uint8_t canvas_width;
-    uint8_t canvas_height;
-    uint8_t cursor_allowed;
-    uint8_t *image;
-} properties_t;
-
 void Error_Handler(void);
 void SystemClock_Config(void);
 void Move_Cursor(status_t status);
-void On_Click(state_t *state, status_t status, properties_t *properties);
-void On_Press(state_t *state, properties_t *properties);
+void On_Click(state_t *state, button_t *canvas, status_t status, uint8_t *cursor_allowed);
+void On_Press(state_t *state, button_t *canvas, uint8_t *cursor_allowed);
+
+void Get_Canvas_XY(button_t *canvas);
 
 #ifdef __cplusplus
 }

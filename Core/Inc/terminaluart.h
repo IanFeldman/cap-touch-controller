@@ -11,7 +11,8 @@ void UART_Print_Char(char data);
 void UART_Print_Esc(char *string);
 void UART_Print(char *string);
 
-void UART_Update_Screen(state_t state, button_t *canvas);
+void UART_Update_Screen(state_t state, button_t canvas);
 void UART_Print_Btn(button_t btn, uint8_t is_solid);
+void UART_Print_Canvas(button_t canvas);
 
 #endif /* INC_TERMINALUART_H_ */

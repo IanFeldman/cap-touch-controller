@@ -24,13 +24,13 @@ typedef struct {
     char name[NAME_LEN_MAX];
 } header_t;
 
-
 void EEPROM_Init();
 void EEPROM_Write_Byte(uint8_t write_data, uint16_t address);
 uint8_t EEPROM_Read_Byte(uint16_t address);
-uint8_t EEPROM_Write_Image(header_t header, uint8_t *image);
+uint8_t EEPROM_Write_Image(header_t *header, uint8_t *image);
 uint8_t EEPROM_Find_Free_Block();
 void EEPROM_Clear();
 void EEPROM_Read_Header(header_t *header, uint8_t block_index);
+uint8_t *EEPROM_Read_Image(header_t *header, uint8_t block_index);
 
 #endif

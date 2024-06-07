@@ -8,12 +8,12 @@
 
 #define BTN_BROWSER_ENTRY_COL1_X   13
 #define BTN_BROWSER_ENTRY_COL2_X   78
-#define BTN_BROWSER_ENTRY_INIT_Y         4
+#define BTN_BROWSER_ENTRY_INIT_Y    4
 #define BTN_BROWSER_ENTRY_SPACING_Y 4
 
 typedef struct {
     uint16_t x, y, w, h;
-    char *text;
+    uint8_t *data;
 } button_t;
 
 extern const button_t BTN_TITLE;

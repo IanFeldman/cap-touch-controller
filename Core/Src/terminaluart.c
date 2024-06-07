@@ -72,7 +72,7 @@ void UART_Reset_Screen() {
 }
 
 /* update the screen based on what state it just switched to */
-void UART_Update_Screen(state_t state, button_t *canvas) {
+void UART_Update_Screen(state_t state, button_t canvas) {
     // save cursor position
     UART_Print_Esc("7");
     UART_Reset_Screen();
@@ -91,6 +91,8 @@ void UART_Update_Screen(state_t state, button_t *canvas) {
             UART_Print_Btn(BTN_SIZING_SMALL, 0);
             UART_Print_Btn(BTN_SIZING_MEDIUM, 0);
             UART_Print_Btn(BTN_SIZING_LARGE, 0);
+
+            UART_Print_Btn(BTN_SIZING_BACK, 0);
             break;
 
         case CANVAS:
@@ -98,7 +100,7 @@ void UART_Update_Screen(state_t state, button_t *canvas) {
             UART_Print("== CANVAS ==");
             // background to white
             UART_Print_Esc("[47m");
-            UART_Print_Btn(*canvas, 1);
+            UART_Print_Canvas(canvas);
             // red
             UART_Print_Esc("[41m");
             UART_Print_Btn(BTN_CANVAS_RED, 1);
@@ -195,11 +197,32 @@ void UART_Print_Btn(button_t btn, uint8_t is_solid) {
         sprintf(buff, "[%u;%uH", btn.y + j, btn.x);
         UART_Print_Esc(buff);
         for (uint16_t i = 0; i < btn.w; i++) {
-            char c = btn.text[j * btn.w + i];
+            uint8_t c = btn.data[j * btn.w + i];
             if (is_solid) {
                 c = CANVAS_CHAR;
             }
             UART_Print_Char(c);
+        }
+    }
+}
+
+void UART_Print_Canvas(button_t canvas) {
+    // set color to white by default
+    UART_Print_Esc("[47m");
+    char buff[BUFF_LEN];
+    for (uint16_t j = 0; j < canvas.h; j++) {
+        // move cursor
+        sprintf(buff, "[%u;%uH", canvas.y + j, canvas.x);
+        UART_Print_Esc(buff);
+        // row
+        for (uint16_t i = 0; i < canvas.w; i++) {
+            // if there is an image to draw
+            if (canvas.data) {
+                uint8_t color = canvas.data[j * canvas.w + i];
+                sprintf(buff, "[4%um", color);
+                UART_Print_Esc(buff);
+            }
+            UART_Print_Char(CANVAS_CHAR);
         }
     }
 }

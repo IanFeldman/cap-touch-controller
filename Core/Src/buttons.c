@@ -47,7 +47,7 @@ const button_t BTN_SIZING_LARGE     = { 89, 15, 17, 9,
         "|               |"
         "|_______________|"
 };
-const button_t BTN_SIZING_BACK      = { 67, 30,  6, 3,
+const button_t BTN_SIZING_BACK      = { 67, 30, 6, 3,
         "------"
         " BACK "
         "------"
@@ -62,12 +62,12 @@ const button_t BTN_CANVAS_DONE      = { 67, 37, 6, 3,
         " DONE "
         "------"
 };
-const button_t BTN_BROWSER_ENTRY = { 0, 0, 40, 3,
+const button_t BTN_BROWSER_ENTRY = { 0, 0, 50, 3,
         "--------------------------------------------------"
         "                                                  "
         "--------------------------------------------------"
 };
-const button_t BTN_BROWSER_BACK     = { 80, 20, 40, 20,
+const button_t BTN_BROWSER_BACK     = { 67, 37, 6, 3,
         "------"
         " BACK "
         "------"

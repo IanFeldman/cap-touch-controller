@@ -65,9 +65,9 @@ void EEPROM_Write_Byte(uint8_t write_data, uint16_t address) {
 
 uint8_t EEPROM_Read_Byte(uint16_t address) {
     // write mode
-    I2C2->CR2 &= ~(I2C_CR2_RD_WRN);
+    I2C2->CR2 &= ~I2C_CR2_RD_WRN;
     // write 2 bytes (register address)
-    I2C2->CR2 &= ~(I2C_CR2_NBYTES);
+    I2C2->CR2 &= ~I2C_CR2_NBYTES;
     I2C2->CR2 |= (2 << I2C_CR2_NBYTES_Pos);
     // start
     I2C2->CR2 |= (1 << I2C_CR2_START_Pos);
@@ -78,9 +78,9 @@ uint8_t EEPROM_Read_Byte(uint16_t address) {
     I2C2->TXDR = address & 0xff;
 
     // read mode
-    I2C2->CR2 |= (I2C_CR2_RD_WRN);
+    I2C2->CR2 |= I2C_CR2_RD_WRN;
     // read 1 byte (data)
-    I2C2->CR2 &= ~(I2C_CR2_NBYTES);
+    I2C2->CR2 &= ~I2C_CR2_NBYTES;
     I2C2->CR2 |= (1 << I2C_CR2_NBYTES_Pos);
     // start
     I2C2->CR2 |= (1 << I2C_CR2_START_Pos);
@@ -93,7 +93,7 @@ uint8_t EEPROM_Read_Byte(uint16_t address) {
 /* Writes image to block in EEPROM
  * return 0 on success, 1 on failure
  */
-uint8_t EEPROM_Write_Image(header_t header, uint8_t *image) {
+uint8_t EEPROM_Write_Image(header_t *header, uint8_t *image) {
     // find block
     uint8_t block = EEPROM_Find_Free_Block();
     if (block == BLOCK_NOT_FOUND) {
@@ -103,11 +103,11 @@ uint8_t EEPROM_Write_Image(header_t header, uint8_t *image) {
     // convert header to array
     uint8_t header_size_used = 3 + NAME_LEN_MAX;
     uint8_t *header_arr = (uint8_t*)malloc(sizeof(uint8_t) * header_size_used);
-    header_arr[0] = header.block_used;
-    header_arr[1] = header.size_x;
-    header_arr[2] = header.size_y;
+    header_arr[0] = header->block_used;
+    header_arr[1] = header->size_x;
+    header_arr[2] = header->size_y;
     for (uint8_t i = 0; i < NAME_LEN_MAX; i++) {
-        header_arr[3 + i] = header.name[i];
+        header_arr[3 + i] = header->name[i];
     }
 
     // write header
@@ -138,11 +138,12 @@ uint8_t EEPROM_Write_Image(header_t header, uint8_t *image) {
     // go to data address
     address += MEM_HEADER_SIZE;
     num_bytes = MEM_PAGE_SIZE + 2; // add two for address
-    uint8_t page_cnt = (header.size_x * header.size_y) / MEM_PAGE_SIZE;
+    uint8_t page_cnt = (header->size_x * header->size_y) / MEM_PAGE_SIZE;
     // set number of bytes
     I2C2->CR2 &= ~(I2C_CR2_NBYTES);
     I2C2->CR2 |= (num_bytes << I2C_CR2_NBYTES_Pos);
 
+    // PAGE WRITE
     // iterate over number of pages we will write
     for (uint8_t i = 0; i < page_cnt; i++) {
         // write address
@@ -217,4 +218,50 @@ void EEPROM_Read_Header(header_t *header, uint8_t block_index) {
         while(!(I2C2->ISR & I2C_ISR_RXNE));
         header->name[i] = I2C2->RXDR;
     }
+}
+
+/* Reads image from EEPROM */
+uint8_t *EEPROM_Read_Image(header_t *header, uint8_t block_index) {
+    // allocate memory (freed when we leave CANVAS state)
+    uint16_t size = header->size_x * header->size_y;
+    uint8_t *image = (uint8_t*)malloc(sizeof(uint8_t) * size);
+
+    uint16_t address = block_index * MEM_BLOCK_SIZE + MEM_HEADER_SIZE;
+    uint8_t page_cnt = size / MEM_PAGE_SIZE;
+
+    // PAGE READ
+    // iterate over number of pages we will read
+    for (uint8_t i = 0; i < page_cnt; i++) {
+        // WRITE ADDRESS
+        // set number of bytes
+        I2C2->CR2 &= ~(I2C_CR2_NBYTES);
+        I2C2->CR2 |= (2 << I2C_CR2_NBYTES_Pos);
+        // write mode
+        I2C2->CR2 &= ~(I2C_CR2_RD_WRN);
+        // start
+        I2C2->CR2 |= (1 << I2C_CR2_START_Pos);
+
+        // upper
+        while(!(I2C2->ISR & I2C_ISR_TXIS));
+        I2C2->TXDR = address >> 8;
+        // lower
+        while(!(I2C2->ISR & I2C_ISR_TXIS));
+        I2C2->TXDR = address & 0xFF;
+
+        // READ
+        I2C2->CR2 |= I2C_CR2_RD_WRN;
+        // set number of bytes
+        I2C2->CR2 &= ~(I2C_CR2_NBYTES);
+        I2C2->CR2 |= (MEM_PAGE_SIZE << I2C_CR2_NBYTES_Pos);
+        // start
+        I2C2->CR2 |= (1 << I2C_CR2_START_Pos);
+        for (uint8_t j = 0; j < MEM_PAGE_SIZE; j++) {
+            // await flag
+            while(!(I2C2->ISR & I2C_ISR_RXNE));
+            image[i * MEM_PAGE_SIZE + j] = I2C2->RXDR;
+        }
+        // increment address
+        address += MEM_PAGE_SIZE;
+    }
+    return image;
 }
