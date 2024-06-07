@@ -268,7 +268,8 @@ void On_Press(info_t *info) {
     else if (char_input == CHAR_RETURN) {
         // add null term
         filename[filename_idx] = '\0';
-        // write file
+        // WRITE FILE
+        // create header
         header_t header;
         header.block_used = 1;
         header.size_x = info->canvas.w;
@@ -276,14 +277,19 @@ void On_Press(info_t *info) {
         for (uint8_t i = 0; i < NAME_LEN_MAX; i++) {
             header.name[i] = filename[i];
         }
+        // write
         uint8_t err = EEPROM_Write_Image(&header, info->canvas.data, info->block_index);
+        // free mem
         free(info->canvas.data);
+        // reset data so that we can draw blank canvas for new sketch
         info->canvas.data = 0;
         if (err) {
             UART_Print("ERROR OCCURED");
             char_input = 0;
             return;
         }
+        // clear filename
+        filename[0] = '/0';
         // change state
         info->state = TITLE;
         info->cursor_allowed = 1;
