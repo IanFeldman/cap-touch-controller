@@ -50,6 +50,7 @@ int main(void)
     }
 }
 
+/* Update cursor position from status  */
 void Move_Cursor(status_t status) {
     if (status.update != 1) return;
     char buff[BUFF_LEN];
@@ -57,6 +58,10 @@ void Move_Cursor(status_t status) {
     UART_Print_Esc(buff);
 }
 
+/* Called whenever the button is clicked/held down
+ * Checks for button presses and implements
+ * state transitions
+ */
 void On_Click(info_t *info, status_t status) {
     static uint8_t color = COLOR_WHITE;
     static uint16_t x_prev = 0;
@@ -116,6 +121,7 @@ void On_Click(info_t *info, status_t status) {
             sprintf(buff, "[4%um", color);
             UART_Print_Esc(buff);
 
+            // click on canvas
             if (On_Btn(x, y, info->canvas)) {
                 if (x == x_prev && y == y_prev) break;
                 // draw to canvas if we have moved cursor
@@ -254,6 +260,7 @@ void On_Click(info_t *info, status_t status) {
     }
 }
 
+/* Called on key press in SAVE state */
 void On_Press(info_t *info) {
     static uint8_t filename[NAME_LEN_MAX];
     static uint8_t filename_idx = 0;
@@ -312,12 +319,13 @@ void On_Press(info_t *info) {
     char_input = 0;
 }
 
+/* Determine canvas pos from width and height */
 void Get_Canvas_XY(button_t *canvas) {
-    // find x, y pos
     canvas->x = (TERMINAL_WIDTH  >> 1) - (canvas->w >> 1) + 1;
     canvas->y = (TERMINAL_HEIGHT >> 1) - (canvas->h >> 1);
 }
 
+/* USART receive interrupt handler */
 void USART2_IRQHandler() {
     // check update interrupt flag
     if (USART2->ISR & USART_ISR_RXNE) {
@@ -326,7 +334,7 @@ void USART2_IRQHandler() {
     }
 }
 
-// rising
+/* External button rising edge handler */
 void EXTI0_IRQHandler() {
     // check flag
     if (EXTI->PR1 & EXTI_PR1_PIF0) {
@@ -340,7 +348,7 @@ void EXTI0_IRQHandler() {
     }
 }
 
-// falling
+/* External button falling edge handler */
 void EXTI1_IRQHandler() {
     // check flag
     if (EXTI->PR1 & EXTI_PR1_PIF1) {
@@ -354,6 +362,7 @@ void EXTI1_IRQHandler() {
     }
 }
 
+/* Debounce timer interrupt handler */
 void TIM2_IRQHandler() {
     // check update interrupt flag
     if (TIM2->SR & TIM_SR_UIF) {

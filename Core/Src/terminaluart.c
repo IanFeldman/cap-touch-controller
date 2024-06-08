@@ -197,6 +197,9 @@ void UART_Update_Screen(state_t state, button_t canvas) {
     UART_Print_Esc("8");
 }
 
+/* prints a button at its position
+ * if is_solid==0, will print the button text
+ * otherwise prints blank*/
 void UART_Print_Btn(button_t btn, uint8_t is_solid) {
     char buff[BUFF_LEN];
     for (uint16_t j = 0; j < btn.h; j++) {
@@ -213,6 +216,7 @@ void UART_Print_Btn(button_t btn, uint8_t is_solid) {
     }
 }
 
+/* Prints the canvas. Loads canvas image if canvas.data != 0*/
 void UART_Print_Canvas(button_t canvas) {
     // set color to white by default
     UART_Print_Esc("[47m");

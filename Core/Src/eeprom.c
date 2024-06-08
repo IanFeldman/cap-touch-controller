@@ -42,6 +42,7 @@ void EEPROM_Init() {
     I2C2->CR2 |= (EEPROM_ADDRESS << 1);
 }
 
+/* Writes a single byte to eeprom */
 void EEPROM_Write_Byte(uint8_t write_data, uint16_t address) {
     // write mode
     I2C2->CR2 &= ~I2C_CR2_RD_WRN;
@@ -63,6 +64,7 @@ void EEPROM_Write_Byte(uint8_t write_data, uint16_t address) {
     for (uint16_t k = 0; k < WRITE_CYCLE_DELAY; k++);
 }
 
+/* Reads a single byte from the eeprom */
 uint8_t EEPROM_Read_Byte(uint16_t address) {
     // write mode
     I2C2->CR2 &= ~I2C_CR2_RD_WRN;
@@ -207,6 +209,7 @@ void EEPROM_Free_Block(uint8_t block_index) {
     EEPROM_Write_Byte(0x0, address);
 }
 
+/* Reads a block header */
 void EEPROM_Read_Header(header_t *header, uint8_t block_index) {
     header->block_used = EEPROM_Read_Byte(block_index * MEM_BLOCK_SIZE);
     if (!header->block_used) return;

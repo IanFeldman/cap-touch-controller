@@ -1,6 +1,7 @@
 #include "main.h"
 #include "touchscreen.h"
 
+/* Initialize touchscreen for I2C comms */
 void Touchscreen_Init() {
     // PB6 : SCL
     // PB7 : SDA
@@ -35,6 +36,7 @@ void Touchscreen_Init() {
     I2C1->CR1 |= I2C_CR1_PE;
 }
 
+/* Read values from touchscreen */
 void Touchscreen_Read(status_t *status) {
     // autoend
     I2C1->CR2 |= (I2C_CR2_AUTOEND);
