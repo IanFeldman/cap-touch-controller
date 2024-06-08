@@ -4,6 +4,10 @@ Touchscreen drawing device with the ability to draw 32x8, 64x16, and 128x32 colo
 Communication protocols used:
 I2C, UART
 
+## System Schematic
+<img alt="Schematic diagram" src="https://github.com/IanFeldman/term-sketch/assets/62089215/16a514e7-ed2c-4cbf-9095-cb18042cc19a">
+
+
 ## Gallery
 
 <img width="1226" alt="Title" src="https://github.com/IanFeldman/term-sketch/assets/62089215/9b839745-e9e9-4142-8e2f-a7f83f785229">
