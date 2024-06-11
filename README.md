@@ -1,8 +1,11 @@
 # TermSketch
-Touchscreen drawing device with the ability to draw 32x8, 64x16, and 128x32 color images. Utilizes STM32l4764g MCU, FocalTech Self-Capacitive Touch Panel Controller (FT6206), and Microchip 24AA512 EEPROM. Features image store and load capability in non-volatile memory. Communicates serially over USB at 115,200 bit/s using 8-bit ASCII and ANSI escape sequences.
+TermSketch is a portable touchscreen drawing device with the ability to create, save, delete, and load 16 different 2x8, 64x16, and 128x32 color images. The device has serial RS-232 output designed for terminals supporting color and ANSI escape sequences. The user can move the terminal cursor by touching and dragging on the capacitive touchscreen and can click by hitting the button. The device supports single clicks as well as clicking and dragging, and the user can draw with red, green, blue, white, or black colors.
 
-Communication protocols used:
+### Communication protocols used:
 I2C, RS-232
+
+### Peripheral hardware used:
+STM32l4764g MCU, PITFT Capacitive Touchscreen, and Microchip 24AA512 EEPROM
 
 ## System Schematic
 <img alt="Schematic diagram" src="https://github.com/IanFeldman/term-sketch/assets/62089215/16a514e7-ed2c-4cbf-9095-cb18042cc19a">
