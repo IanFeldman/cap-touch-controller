@@ -173,6 +173,7 @@ void On_Click(info_t *info, status_t status) {
                 state_update = 1;
                 break;
             }
+            break;
 
         case SAVE:
             // no click operations

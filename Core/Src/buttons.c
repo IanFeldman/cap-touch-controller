@@ -118,6 +118,7 @@ void Button_Init() {
     // enabling interrupt for overflow
     TIM2->DIER = TIM_DIER_UIE;
     // don't enable timer
+    TIM2->CR1 |= TIM_CR1_OPM;
 
     // set up interrupts
     // timer
