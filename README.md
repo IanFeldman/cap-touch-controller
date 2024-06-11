@@ -1,8 +1,8 @@
 # TermSketch
-Touchscreen drawing device with the ability to draw 32x8, 64x16, and 128x32 color images. Utilizes STM32l4764g MCU, FocalTech Self-Capacitive Touch Panel Controller (FT6206), and Microchip 24AA512 EEPROM. Features image store and load capability in non-volatile memory. Communicates serially over USB at 115,200 baud/s using 8-bit ASCII and ANSI escape sequences.
+Touchscreen drawing device with the ability to draw 32x8, 64x16, and 128x32 color images. Utilizes STM32l4764g MCU, FocalTech Self-Capacitive Touch Panel Controller (FT6206), and Microchip 24AA512 EEPROM. Features image store and load capability in non-volatile memory. Communicates serially over USB at 115,200 bit/s using 8-bit ASCII and ANSI escape sequences.
 
 Communication protocols used:
-I2C, UART
+I2C, RS-232
 
 ## System Schematic
 <img alt="Schematic diagram" src="https://github.com/IanFeldman/term-sketch/assets/62089215/16a514e7-ed2c-4cbf-9095-cb18042cc19a">
